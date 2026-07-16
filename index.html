@@ -681,8 +681,9 @@
 <script>
 // ================= Credenciales de Acceso =================
 const CREDENTIALS = {
-  u: 'admin',
-  p: 'ranchgpt2026'
+  'admin': 'ranchgpt2026'
+  // Para agregar un usuario nuevo, añade una línea aquí:
+  // 'nombre_usuario': 'contraseña_secreta'
 };
 
 // ================= Configuración del Modelo =================
@@ -935,7 +936,7 @@ $('loginForm').addEventListener('submit', (e) => {
   const u = $('username').value.trim();
   const p = $('password').value;
   
-  if (u === CREDENTIALS.u && p === CREDENTIALS.p) {
+  if (CREDENTIALS[u] && p === CREDENTIALS[u]) {
     $('loginError').style.display = 'none';
     const remember = $('rememberMe').checked;
     if (remember) {
