@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador RanchGPT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mint:#09BC8A;
+    --mint-soft:#E6F8F2;
+    --petrol:#1A3640;
+    --petrol-deep:#122731;
+    --ink:#22343C;
+    --muted:#6B7F87;
+    --line:#E3EBEE;
+    --bg:#F5F8F9;
+    --amber:#E8A33D;
+    --amber-soft:#FCF3E3;
+    --red:#D95F5F;
+    --red-soft:#FBEDED;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+
+  header{background:var(--petrol);color:#fff;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .logo{font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .logo span{color:var(--mint)}
+  .header-sub{font-size:12px;color:#9FB6BE;font-weight:500;text-transform:uppercase;letter-spacing:.12em}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start}
+  @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .card+.card{margin-top:20px}
+  .card h2{font-size:15px;font-weight:700;color:var(--petrol);margin-bottom:4px}
+  .card .hint{font-size:12px;color:var(--muted);margin-bottom:18px}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--petrol);margin-bottom:6px}
+  input[type=number],select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff;transition:border-color .15s}
+  input[type=number]:focus,select:focus{outline:none;border-color:var(--mint)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:560px){.grid2,.grid3{grid-template-columns:1fr}}
+  .field{margin-bottom:14px}
+
+  .seg{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:110px;padding:11px 8px;border:1.5px solid var(--line);background:#fff;border-radius:12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+  .seg button.active{background:var(--petrol);border-color:var(--petrol);color:#fff}
+  .seg button:hover:not(.active){border-color:var(--mint);color:var(--petrol)}
+
+  .crop-row{display:grid;grid-template-columns:1fr 130px;gap:10px;margin-bottom:10px;align-items:end}
+
+  /* Quote panel */
+  .quote{position:sticky;top:20px}
+  .quote-card{background:var(--petrol);color:#fff;border-radius:var(--radius);padding:26px;border:none}
+  .quote-card h2{color:#fff;font-size:15px;font-weight:700}
+  .plan-badge{display:inline-block;background:var(--mint);color:var(--petrol-deep);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:5px 12px;border-radius:99px;margin:10px 0 18px}
+  .plan-badge.custom{background:var(--amber)}
+  .big-line{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+  .big-line .lbl{font-size:12px;color:#9FB6BE;font-weight:500}
+  .big-line .val{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .big-line .val small{font-size:12px;font-weight:500;color:#9FB6BE}
+  .sub-line{display:flex;justify-content:space-between;padding:7px 0;font-size:12.5px;color:#C6D4D9}
+  .sub-line .v{font-weight:600;color:#fff}
+
+  .gauge-wrap{margin:20px 0 6px}
+  .gauge-lbl{display:flex;justify-content:space-between;font-size:11px;color:#9FB6BE;margin-bottom:6px;font-weight:500}
+  .gauge{height:10px;background:rgba(255,255,255,.14);border-radius:99px;overflow:hidden;position:relative}
+  .gauge-fill{height:100%;background:var(--mint);border-radius:99px;transition:width .3s ease}
+  .gauge-fill.warn{background:var(--amber)}
+  .gauge-fill.over{background:var(--red)}
+  .gauge-note{font-size:11px;color:#9FB6BE;margin-top:6px}
+
+  .alert{border-radius:12px;padding:12px 14px;font-size:12.5px;font-weight:500;margin-top:16px;display:none}
+  .alert.warn{display:block;background:var(--amber-soft);color:#8A6420;border:1px solid #F0D9A8}
+  .alert.danger{display:block;background:var(--red-soft);color:#96393E;border:1px solid #EFC5C5}
+
+  .icp{margin-top:16px;font-size:12px;display:flex;align-items:center;gap:8px;color:#C6D4D9}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--mint);flex-shrink:0}
+  .dot.no{background:var(--amber)}
+
+  details{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  details summary{cursor:pointer;padding:18px 24px;font-size:13px;font-weight:700;color:var(--petrol);list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::after{content:'+';font-size:18px;color:var(--mint);font-weight:600}
+  details[open] summary::after{content:'–'}
+  .params{padding:0 24px 24px}
+  .params h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 10px}
+  .params h3:first-child{margin-top:0}
+  .param-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .param-grid label{font-weight:500;color:var(--muted);font-size:11px}
+  .tier-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tier-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+  .tier-table td{padding:6px 8px;border-bottom:1px solid var(--line)}
+  .tier-table input{padding:6px 8px;font-size:12.5px}
+
+  .breakdown{margin-top:16px;font-size:12px;color:#9FB6BE}
+  .breakdown div{display:flex;justify-content:space-between;padding:3px 0}
+  .breakdown .bd-v{color:#E2ECEF}
+
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;font-size:11.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Ranch<span>GPT</span></div>
+    <div class="header-sub">Cotizador · Suscripción anual 2026</div>
+  </div>
+  <div class="header-sub">Uso interno · Nomer Company S.A.</div>
+</header>
+
+<div class="wrap">
+  <!-- ============ INPUTS ============ -->
+  <div>
+    <div class="card">
+      <h2>Sistema productivo</h2>
+      <p class="hint">Define las variables de dimensionamiento y los márgenes de referencia para estimar la renta.</p>
+      <div class="seg" id="segSistema">
+        <button data-v="ganadero" class="active">Ganadero</button>
+        <button data-v="agricola">Agrícola</button>
+        <button data-v="mixto">Mixto</button>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label>Establecimientos</label>
+          <input type="number" id="inEstab" value="1" min="1">
+        </div>
+        <div class="field">
+          <label>Área total (ha)</label>
+          <input type="number" id="inArea" value="4000" min="0">
+        </div>
+        <div class="field">
+          <label>Usuarios</label>
+          <input type="number" id="inUsuarios" value="8" min="1">
+        </div>
+      </div>
+      <div class="field" style="margin-top:4px">
+        <label>¿El cliente tiene Proyecto COMAP?</label>
+        <div class="seg" id="segComap" style="margin-bottom:10px">
+          <button data-v="no" class="active">No</button>
+          <button data-v="si">Sí</button>
+        </div>
+      </div>
+      <div class="field" id="fieldDescuento">
+        <label>Descuento sobre suscripción año 1 <span id="lblDesc" style="color:var(--mint)">100%</span></label>
+        <input type="range" id="inDescuento" min="0" max="100" step="5" value="100" style="width:100%;accent-color:var(--mint)">
+        <p class="hint" style="margin:4px 0 0" id="hintDesc">El año 1 se cobra el setup. La suscripción del año 1 puede bonificarse total o parcialmente.</p>
+      </div>
+    </div>
+
+    <!-- Ganadero -->
+    <div class="card" id="cardGanadero">
+      <h2>Dimensión ganadera</h2>
+      <p class="hint">La cantidad de cabezas es la variable principal de la suscripción ganadera.</p>
+      <div class="grid2">
+        <div class="field">
+          <label>Cabezas de ganado</label>
+          <input type="number" id="inCabezas" value="3000" min="0">
+        </div>
+        <div class="field">
+          <label>Tipo de sistema</label>
+          <select id="inTipoGan">
+            <option value="cria">Cría</option>
+            <option value="recria">Recría</option>
+            <option value="invernada">Invernada a campo</option>
+            <option value="cc_abierto" selected>Ciclo completo abierto</option>
+            <option value="cc_cerrado">Ciclo completo cerrado</option>
+            <option value="feedlot">Feedlot</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agrícola -->
+    <div class="card" id="cardAgricola" style="display:none">
+      <h2>Dimensión agrícola</h2>
+      <p class="hint">Área productiva por cultivo. La suma define el área agrícola facturable y la renta estimada.</p>
+      <div id="cropRows"></div>
+      <div class="sub-line" style="color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:6px">
+        <span>Área agrícola total</span><span class="v" id="lblAreaAgri" style="color:var(--petrol)">0 ha</span>
+      </div>
+    </div>
+
+    <!-- Parámetros -->
+    <details>
+      <summary>Parámetros del modelo (márgenes CREA y tramos de precio)</summary>
+      <div class="params">
+        <h3>Márgenes ganaderos — ingreso neto estimado (USD/cabeza/año)</h3>
+        <div class="param-grid" id="pgGan"></div>
+
+        <h3>Márgenes agrícolas — ingreso neto estimado (USD/ha/año)</h3>
+        <div class="param-grid" id="pgAgri"></div>
+
+        <h3>Tramos de suscripción — ganadería (USD/cabeza/año)</h3>
+        <table class="tier-table" id="tiersGan"></table>
+
+        <h3>Tramos de suscripción — agricultura (USD/ha/año)</h3>
+        <table class="tier-table" id="tiersAgri"></table>
+
+        <h3>Setup y límites</h3>
+        <div class="param-grid">
+          <div><label>Setup base (USD)</label><input type="number" id="pSetupBase" value="6000"></div>
+          <div><label>Setup por establecimiento adicional</label><input type="number" id="pSetupEstab" value="250"></div>
+          <div><label>Usuarios incluidos en setup</label><input type="number" id="pUsersInc" value="10"></div>
+          <div><label>Setup por usuario adicional</label><input type="number" id="pSetupUser" value="30"></div>
+          <div><label>Recargo mixto (%)</label><input type="number" id="pMixto" value="15"></div>
+          <div><label>Setup mínimo (USD)</label><input type="number" id="pSetupMin" value="12000"></div>
+          <div><label>Suscripción mínima (Premium, USD/año)</label><input type="number" id="pSubMin" value="10000"></div>
+          <div><label>Umbral plan Personalizado (USD/año)</label><input type="number" id="pUmbral" value="16800"></div>
+          <div><label>Tope sobre renta neta (%)</label><input type="number" id="pTope" value="5" step="0.5"></div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ COTIZACIÓN ============ -->
+  <div class="quote">
+    <div class="quote-card">
+      <h2>Cotización estimada</h2>
+      <span class="plan-badge" id="planBadge">Plan Premium</span>
+
+      <div class="big-line">
+        <span class="lbl">Año 1 · Setup + suscripción</span>
+        <span class="val" id="vAno1">—</span>
+      </div>
+      <div class="big-line">
+        <span class="lbl">Año 2 en adelante · Suscripción</span>
+        <span class="val" id="vAno2">—<small> /año</small></span>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="sub-line"><span>Setup año 1</span><span class="v" id="vSetup">—</span></div>
+        <div class="sub-line"><span id="lblSubAno1">Suscripción año 1</span><span class="v" id="vSubAno1">—</span></div>
+        <div class="sub-line"><span>Suscripción anual (lista)</span><span class="v" id="vSub">—</span></div>
+        <div class="sub-line"><span>Equivalente mensual (año 2+)</span><span class="v" id="vMensual">—</span></div>
+      </div>
+
+      <div class="gauge-wrap">
+        <div class="gauge-lbl"><span>Suscripción vs. tope de renta</span><span id="vPct">—</span></div>
+        <div class="gauge"><div class="gauge-fill" id="gaugeFill" style="width:0%"></div></div>
+        <div class="gauge-note" id="gaugeNote">Renta neta estimada: — · Tope 5%: —</div>
+      </div>
+
+      <div class="breakdown" id="breakdown"></div>
+
+      <div class="icp" id="icpLine"><span class="dot"></span><span>Cumple perfil ICP</span></div>
+
+      <div class="alert warn" id="alertWarn"></div>
+      <div class="alert danger" id="alertDanger"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Los márgenes de referencia son estimaciones orientativas basadas en órdenes de magnitud de resultados FUCREA / Plan Agropecuario y deben calibrarse con datos vigentes de cada ejercicio. Esta herramienta genera una cotización preliminar; la propuesta formal se dimensiona en la etapa de demo y relevamiento.
+</footer>
+
+<script>
+// ================= Configuración =================
+const MARGENES_GAN = {
+  cria:        {label:'Cría', v:85},
+  recria:      {label:'Recría', v:70},
+  invernada:   {label:'Invernada a campo', v:110},
+  cc_abierto:  {label:'Ciclo completo abierto', v:95},
+  cc_cerrado:  {label:'Ciclo completo cerrado', v:100},
+  feedlot:     {label:'Feedlot (por plaza)', v:130}
+};
+const CULTIVOS = {
+  soja:    {label:'Soja', v:180},
+  maiz:    {label:'Maíz', v:220},
+  trigo:   {label:'Trigo', v:120},
+  cebada:  {label:'Cebada', v:130},
+  arroz:   {label:'Arroz', v:380},
+  girasol: {label:'Girasol', v:140},
+  sorgo:   {label:'Sorgo', v:100},
+  otro:    {label:'Otro cultivo', v:150}
+};
+let TIERS_GAN = [
+  {hasta:3000,  precio:3.00},
+  {hasta:6000,  precio:2.20},
+  {hasta:10000, precio:1.50},
+  {hasta:Infinity, precio:1.00}
+];
+let TIERS_AGRI = [
+  {hasta:3000,  precio:4.00},
+  {hasta:10000, precio:3.00},
+  {hasta:25000, precio:2.20},
+  {hasta:Infinity, precio:1.50}
+];
+
+let sistema = 'ganadero';
+let comap = false;
+
+// ================= UI dinámica =================
+const $ = id => document.getElementById(id);
+const fmt = n => 'USD ' + Math.round(n).toLocaleString('es-UY');
+
+// Selector de sistema
+document.querySelectorAll('#segSistema button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#segSistema button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    sistema = b.dataset.v;
+    $('cardGanadero').style.display = (sistema==='ganadero'||sistema==='mixto')?'block':'none';
+    $('cardAgricola').style.display = (sistema==='agricola'||sistema==='mixto')?'block':'none';
+    calc();
+  });
+});
+
+// Selector COMAP
+document.querySelectorAll('#segComap button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#segComap button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    comap = b.dataset.v==='si';
+    const slider = $('inDescuento');
+    slider.disabled = comap;
+    $('fieldDescuento').style.opacity = comap ? .45 : 1;
+    $('hintDesc').textContent = comap
+      ? 'Con Proyecto COMAP la suscripción del año 1 se factura completa (sin bonificación), para que integre la inversión del proyecto.'
+      : 'El año 1 se cobra el setup. La suscripción del año 1 puede bonificarse total o parcialmente.';
+    calc();
+  });
+});
+
+// Filas de cultivos
+const cropRows = $('cropRows');
+Object.entries(CULTIVOS).forEach(([k,c])=>{
+  const row = document.createElement('div');
+  row.className='crop-row';
+  row.innerHTML = `<div><label>${c.label}</label></div>
+    <input type="number" min="0" placeholder="ha" data-crop="${k}" value="0">`;
+  cropRows.appendChild(row);
+});
+
+// Paneles de parámetros editables
+const pgGan = $('pgGan');
+Object.entries(MARGENES_GAN).forEach(([k,m])=>{
+  const d=document.createElement('div');
+  d.innerHTML=`<label>${m.label}</label><input type="number" data-mgan="${k}" value="${m.v}">`;
+  pgGan.appendChild(d);
+});
+const pgAgri = $('pgAgri');
+Object.entries(CULTIVOS).forEach(([k,c])=>{
+  const d=document.createElement('div');
+  d.innerHTML=`<label>${c.label}</label><input type="number" data-magri="${k}" value="${c.v}">`;
+  pgAgri.appendChild(d);
+});
+function renderTiers(tableId, tiers, unidad){
+  const t=$(tableId);
+  t.innerHTML=`<tr><th>Tramo (hasta ${unidad})</th><th>Precio unitario (USD)</th></tr>`+
+    tiers.map((tr,i)=>`<tr>
+      <td>${tr.hasta===Infinity?'Excedente':'<input type="number" data-tier="'+tableId+'-'+i+'-h" value="'+tr.hasta+'">'}</td>
+      <td><input type="number" step="0.05" data-tier="${tableId}-${i}-p" value="${tr.precio}"></td>
+    </tr>`).join('');
+}
+renderTiers('tiersGan', TIERS_GAN, 'cabezas');
+renderTiers('tiersAgri', TIERS_AGRI, 'ha');
+
+// ================= Motor de cálculo =================
+function tieredPrice(qty, tiers){
+  let total=0, prev=0, detalle=[];
+  for(const t of tiers){
+    if(qty<=prev) break;
+    const enTramo = Math.min(qty, t.hasta) - prev;
+    if(enTramo>0){
+      total += enTramo * t.precio;
+      detalle.push({unidades:enTramo, precio:t.precio});
+    }
+    prev = t.hasta;
+  }
+  return {total, detalle};
+}
+
+function readTiers(tableId, tiers){
+  return tiers.map((t,i)=>{
+    const h = document.querySelector(`[data-tier="${tableId}-${i}-h"]`);
+    const p = document.querySelector(`[data-tier="${tableId}-${i}-p"]`);
+    return {hasta: h ? (+h.value||Infinity) : Infinity, precio: p ? (+p.value||0) : 0};
+  });
+}
+
+function calc(){
+  const estab = Math.max(1, +$('inEstab').value||1);
+  const usuarios = Math.max(1, +$('inUsuarios').value||1);
+  const areaTotal = +$('inArea').value||0;
+  const cabezas = (sistema!=='agricola') ? (+$('inCabezas').value||0) : 0;
+  const tipoGan = $('inTipoGan').value;
+
+  // Márgenes actualizados desde parámetros
+  document.querySelectorAll('[data-mgan]').forEach(i=>MARGENES_GAN[i.dataset.mgan].v = +i.value||0);
+  document.querySelectorAll('[data-magri]').forEach(i=>CULTIVOS[i.dataset.magri].v = +i.value||0);
+  TIERS_GAN = readTiers('tiersGan', TIERS_GAN);
+  TIERS_AGRI = readTiers('tiersAgri', TIERS_AGRI);
+
+  // Área agrícola por cultivo
+  let areaAgri=0, rentaAgri=0;
+  if(sistema!=='ganadero'){
+    document.querySelectorAll('[data-crop]').forEach(i=>{
+      const ha = +i.value||0;
+      areaAgri += ha;
+      rentaAgri += ha * CULTIVOS[i.dataset.crop].v;
+    });
+  }
+  $('lblAreaAgri').textContent = areaAgri.toLocaleString('es-UY')+' ha';
+
+  // Renta neta estimada
+  const rentaGan = (sistema!=='agricola') ? cabezas * MARGENES_GAN[tipoGan].v : 0;
+  const rentaNeta = rentaGan + rentaAgri;
+
+  // Suscripción escalonada
+  const subGan = (sistema!=='agricola') ? tieredPrice(cabezas, TIERS_GAN) : {total:0,detalle:[]};
+  const subAgri = (sistema!=='ganadero') ? tieredPrice(areaAgri, TIERS_AGRI) : {total:0,detalle:[]};
+  let subCalculada = subGan.total + subAgri.total;
+
+  // Tope y piso
+  const topePct = (+$('pTope').value||5)/100;
+  const tope = rentaNeta * topePct;
+  const subMin = +$('pSubMin').value||10000;
+  const umbral = +$('pUmbral').value||16800;
+
+  let subFinal = subCalculada;
+  let capApplied=false, floorApplied=false;
+  if(tope>0 && subFinal>tope){ subFinal = tope; capApplied=true; }
+  if(subFinal < subMin){ subFinal = subMin; floorApplied=true; }
+
+  // Setup año 1
+  const setupBase = +$('pSetupBase').value||6000;
+  const setupEstab = (+$('pSetupEstab').value||250) * Math.max(0, estab-1);
+  const usersInc = +$('pUsersInc').value||10;
+  const setupUsers = (+$('pSetupUser').value||30) * Math.max(0, usuarios-usersInc);
+  let setup = setupBase + setupEstab + setupUsers;
+  if(sistema==='mixto') setup *= 1 + (+$('pMixto').value||15)/100;
+  setup = Math.max(setup, +$('pSetupMin').value||12000);
+
+  // Plan
+  const esPersonalizado = subFinal >= umbral || estab>1 || sistema==='mixto';
+  const badge = $('planBadge');
+  badge.textContent = esPersonalizado ? 'Plan Personalizado' : 'Plan Premium';
+  badge.className = 'plan-badge' + (esPersonalizado?' custom':'');
+
+  // ICP
+  const cumpleICP =
+    (sistema==='mixto' && areaTotal>2000) ||
+    (sistema==='ganadero' && (areaTotal>4000 || cabezas>4500)) ||
+    (sistema==='agricola' && areaAgri>2000);
+  const icp = $('icpLine');
+  icp.innerHTML = `<span class="dot ${cumpleICP?'':'no'}"></span><span>${cumpleICP?'Cumple perfil ICP':'Por debajo del perfil ICP — revisar calificación'}</span>`;
+
+  // Descuento año 1 sobre suscripción (anulado si hay Proyecto COMAP)
+  const desc = comap ? 0 : (+$('inDescuento').value||0)/100;
+  $('lblDesc').textContent = comap ? '0% (COMAP)' : Math.round((+$('inDescuento').value||0))+'%';
+  const subAno1 = subFinal * (1-desc);
+
+  // Render
+  $('vSetup').textContent = fmt(setup);
+  $('lblSubAno1').textContent = comap ? 'Suscripción año 1 (COMAP · sin bonificación)' : (desc>0 ? `Suscripción año 1 (desc. ${Math.round(desc*100)}%)` : 'Suscripción año 1');
+  $('vSubAno1').textContent = desc>=1 ? 'Bonificada' : fmt(subAno1);
+  $('vSub').textContent = fmt(subFinal);
+  $('vMensual').textContent = fmt(subFinal/12)+' /mes';
+  $('vAno1').textContent = fmt(setup + subAno1);
+  $('vAno2').innerHTML = fmt(subFinal)+'<small> /año</small>';
+
+  // Gauge: suscripción como % de la renta
+  const pctRenta = rentaNeta>0 ? (subFinal/rentaNeta)*100 : 0;
+  const pctGauge = tope>0 ? Math.min(100,(subFinal/tope)*100) : 0;
+  $('vPct').textContent = rentaNeta>0 ? pctRenta.toFixed(1)+'% de la renta' : 'sin renta estimada';
+  const gf = $('gaugeFill');
+  gf.style.width = pctGauge+'%';
+  gf.className = 'gauge-fill' + (pctGauge>=99.5 ? (floorApplied&&subMin>tope?' over':' warn') : '');
+  $('gaugeNote').textContent = `Renta neta estimada: ${fmt(rentaNeta)} · Tope ${(topePct*100).toFixed(1)}%: ${fmt(tope)}`;
+
+  // Desglose por tramos
+  let bd='';
+  if(subGan.detalle.length) bd += subGan.detalle.map(d=>`<div><span>Ganadería · ${d.unidades.toLocaleString('es-UY')} cab × ${d.precio.toFixed(2)}</span><span class="bd-v">${fmt(d.unidades*d.precio)}</span></div>`).join('');
+  if(subAgri.detalle.length) bd += subAgri.detalle.map(d=>`<div><span>Agricultura · ${d.unidades.toLocaleString('es-UY')} ha × ${d.precio.toFixed(2)}</span><span class="bd-v">${fmt(d.unidades*d.precio)}</span></div>`).join('');
+  if(capApplied) bd += `<div><span>Ajuste por tope de renta (${(topePct*100).toFixed(1)}%)</span><span class="bd-v">−${fmt(subCalculada-tope)}</span></div>`;
+  if(floorApplied) bd += `<div><span>Piso de suscripción aplicado</span><span class="bd-v">${fmt(subMin)}</span></div>`;
+  $('breakdown').innerHTML = bd;
+
+  // Alertas
+  const warn=$('alertWarn'), danger=$('alertDanger');
+  warn.className='alert warn'; warn.style.display='none';
+  danger.className='alert danger'; danger.style.display='none';
+  if(rentaNeta>0 && subMin>tope){
+    danger.style.display='block';
+    danger.textContent = `La suscripción mínima (${fmt(subMin)}) supera el tope del ${(topePct*100).toFixed(1)}% de la renta estimada (${fmt(tope)}). El cliente está por debajo del umbral de viabilidad de renovación.`;
+  } else if(capApplied){
+    warn.style.display='block';
+    warn.textContent = `El precio escalonado (${fmt(subCalculada)}) superaba el tope de renta y fue ajustado al ${(topePct*100).toFixed(1)}% (${fmt(tope)}).`;
+  }
+}
+
+document.addEventListener('input', calc);
+calc();
+</script>
+</body>
+</html>
