@@ -6,6 +6,7 @@
 <title>Cotizador RanchGPT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{
     --mint:#09BC8A;
@@ -49,6 +50,27 @@
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
   @media(max-width:560px){.grid2,.grid3{grid-template-columns:1fr}}
   .field{margin-bottom:14px}
+
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .checkbox-item input {
+    accent-color: var(--mint);
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+  }
 
   .seg{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
   .seg button{flex:1;min-width:110px;padding:11px 8px;border:1.5px solid var(--line);background:#fff;border-radius:12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
@@ -106,8 +128,59 @@
 
   footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;font-size:11.5px;color:var(--muted)}
 
-  /* ============ MEJORAS ============ */
-  /* Pantalla de Login */
+  /* Buttons in quote sidebar */
+  .btn-pdf {
+    width: 100%;
+    background: var(--mint);
+    color: var(--petrol-deep);
+    border: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 12px rgba(9, 188, 138, 0.25);
+  }
+  .btn-pdf:hover {
+    background: #0cd69e;
+  }
+  .btn-pdf:active {
+    transform: scale(0.98);
+  }
+
+  .btn-hs {
+    width: 100%;
+    background: #FF7A59; /* HubSpot Orange */
+    color: #fff;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-hs:hover {
+    background: #ff8f73;
+  }
+  .btn-hs:active {
+    transform: scale(0.98);
+  }
+
+  /* Login Overlay */
   .login-overlay {
     position: fixed;
     top: 0;
@@ -221,38 +294,14 @@
     color: var(--petrol-deep);
   }
 
-  /* HubSpot Button and Dialog */
-  .btn-hs {
-    width: 100%;
-    background: #FF7A59; /* HubSpot Orange */
-    color: #fff;
-    border: none;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
-    transition: background 0.15s, transform 0.1s;
-  }
-  .btn-hs:hover {
-    background: #ff8f73;
-  }
-  .btn-hs:active {
-    transform: scale(0.98);
-  }
-  .hs-dialog {
+  /* Modals (HubSpot & PDF) */
+  .hs-dialog, .pdf-modal-dialog {
     border: none;
     border-radius: var(--radius);
     padding: 0;
-    max-width: 520px;
-    width: 90%;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    max-width: 600px;
+    width: 92%;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.35);
     position: fixed;
     top: 50%;
     left: 50%;
@@ -260,15 +309,20 @@
     background: #fff;
     z-index: 1000;
   }
-  .hs-dialog::backdrop {
+  .pdf-modal-dialog {
+    max-width: 900px;
+    height: 90vh;
+  }
+  .hs-dialog::backdrop, .pdf-modal-dialog::backdrop {
     background: rgba(18, 39, 49, 0.65);
     backdrop-filter: blur(4px);
   }
-  .hs-modal-content {
+  .hs-modal-content, .pdf-modal-content {
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
-  .hs-modal-header {
+  .hs-modal-header, .pdf-modal-header {
     background: var(--petrol);
     color: #fff;
     padding: 18px 24px;
@@ -278,11 +332,11 @@
     border-top-left-radius: var(--radius);
     border-top-right-radius: var(--radius);
   }
-  .hs-modal-header h3 {
+  .hs-modal-header h3, .pdf-modal-header h3 {
     font-size: 16px;
     font-weight: 700;
   }
-  .hs-close {
+  .hs-close, .pdf-close {
     background: none;
     border: none;
     color: #fff;
@@ -297,14 +351,17 @@
     align-items: center;
     justify-content: center;
   }
-  .hs-close:hover {
+  .hs-close:hover, .pdf-close:hover {
     opacity: 1;
   }
   .hs-modal-body {
     padding: 24px;
   }
-  .hs-modal-body .hint {
-    margin-bottom: 16px;
+  .pdf-modal-body {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+    background: #eef2f4;
   }
   .quote-summary-box {
     background: var(--bg);
@@ -336,13 +393,15 @@
     font-weight: 600;
     color: var(--petrol);
   }
-  .hs-modal-footer {
+  .hs-modal-footer, .pdf-modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 20px;
+    padding: 16px 24px;
+    background: #fff;
     border-top: 1px solid var(--line);
-    padding-top: 16px;
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
   }
   .btn-cancel {
     background: none;
@@ -380,6 +439,38 @@
     color: var(--muted);
     cursor: not-allowed;
   }
+  .btn-action-pdf {
+    background: var(--mint);
+    color: var(--petrol-deep);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-action-pdf:hover {
+    background: #0cd69e;
+  }
+  .btn-secondary-pdf {
+    background: var(--petrol);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-secondary-pdf:hover {
+    background: var(--petrol-deep);
+  }
   .hs-error {
     color: var(--red);
     background: var(--red-soft);
@@ -410,6 +501,339 @@
   #btnResetDefaults:hover {
     background: var(--red-soft);
     border-color: var(--red);
+  }
+
+  /* ============ PDF TEMPLATE STYLES ============ */
+  #pdfRenderArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .pdf-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+    color: #22343C;
+    font-family: 'Poppins', sans-serif;
+    padding: 24mm 20mm;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--mint);
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+  }
+  .pdf-header .pdf-logo {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--petrol);
+  }
+  .pdf-header .pdf-logo span {
+    color: var(--mint);
+  }
+  .pdf-header .pdf-doc-type {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .pdf-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+    margin-top: auto;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Cover Page */
+  .pdf-cover {
+    background: linear-gradient(135deg, var(--petrol-deep) 0%, var(--petrol) 100%);
+    color: #fff;
+    padding: 30mm 20mm 20mm;
+  }
+  .pdf-cover-logo {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 40px;
+  }
+  .pdf-cover-logo span { color: var(--mint); }
+  .pdf-cover-tag {
+    display: inline-block;
+    background: rgba(9, 188, 138, 0.15);
+    color: var(--mint);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-bottom: 16px;
+  }
+  .pdf-cover-title {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    color: #ffffff;
+  }
+  .pdf-cover-subtitle {
+    font-size: 16px;
+    color: #9FB6BE;
+    font-weight: 500;
+    margin-bottom: 50px;
+  }
+  .pdf-cover-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .pdf-cover-box label {
+    font-size: 11px;
+    color: var(--mint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .pdf-cover-box h2 {
+    font-size: 22px;
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .pdf-cover-box p {
+    font-size: 13px;
+    color: #C6D4D9;
+  }
+  .pdf-cover-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .pdf-stat-item {
+    font-size: 12px;
+    color: #fff;
+  }
+  .pdf-stat-item span {
+    color: #9FB6BE;
+  }
+
+  /* Grid Layouts inside PDF */
+  .pdf-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--petrol);
+    margin-bottom: 6px;
+  }
+  .pdf-section-tag {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--mint);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .pdf-intro-p {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .pdf-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .pdf-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .pdf-grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .pdf-card-box {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .pdf-card-box h4 {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--petrol);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pdf-card-box p {
+    font-size: 11.5px;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+
+  .pdf-pillar-card {
+    background: var(--petrol);
+    color: #fff;
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .pdf-pillar-num {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--mint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .pdf-pillar-card h4 {
+    font-size: 16px;
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .pdf-pillar-card p {
+    font-size: 11.5px;
+    color: #C6D4D9;
+    line-height: 1.45;
+  }
+
+  .pdf-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--petrol);
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+  }
+  .pdf-flow-step {
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .pdf-flow-arrow {
+    color: var(--mint);
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .pdf-roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .pdf-roadmap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .pdf-roadmap-badge {
+    background: var(--mint-soft);
+    color: var(--mint);
+    border: 1px solid #C2F0E2;
+    font-weight: 800;
+    font-size: 13px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pdf-roadmap-content h5 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--petrol);
+  }
+  .pdf-roadmap-content p {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+    margin-bottom: 16px;
+  }
+  .pdf-table th {
+    background: var(--petrol);
+    color: #fff;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  .pdf-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .pdf-table tr:nth-child(even) td {
+    background: var(--bg);
+  }
+
+  @media print {
+    body { background: #fff; }
+    #appContent, #loginOverlay, .hs-dialog, .pdf-modal-header, .pdf-modal-footer {
+      display: none !important;
+    }
+    .pdf-modal-dialog {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      transform: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      box-shadow: none !important;
+    }
+    .pdf-modal-body {
+      padding: 0 !important;
+      background: #fff !important;
+    }
+    .pdf-page {
+      box-shadow: none !important;
+      margin: 0 !important;
+      width: 210mm !important;
+      min-height: 297mm !important;
+    }
   }
 </style>
 </head>
@@ -444,7 +868,7 @@
   </div>
 </div>
 
-<!-- Contenedor Principal (Oculto inicialmente hasta el login) -->
+<!-- Contenedor Principal -->
 <div id="appContent" style="display: none;">
   <header>
     <div>
@@ -457,6 +881,53 @@
   <div class="wrap">
     <!-- ============ INPUTS ============ -->
     <div>
+      <!-- DATOS DEL PRODUCTOR / EMPRESA -->
+      <div class="card" style="border-left: 4px solid var(--mint)">
+        <h2>Datos del Productor / Empresa (para Propuesta PDF)</h2>
+        <p class="hint">Ingresa los datos del cliente para personalizar automáticamente la propuesta comercial en PDF.</p>
+        <div class="grid2">
+          <div class="field">
+            <label for="inProdNombre">Nombre del Productor / Razón Social</label>
+            <input type="text" id="inProdNombre" value="Establecimiento El Ombú" placeholder="Ej: WAYMEL JEAN LUC DOMINIQUE">
+          </div>
+          <div class="field">
+            <label for="inProdContacto">Atención / Cargo del Destinatario</label>
+            <input type="text" id="inProdContacto" value="Ing. Agr. Juan Pérez - Director General" placeholder="Ej: Jean Luc Waymel - Director">
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label for="inProdUbicacion">Ubicación / País</label>
+            <input type="text" id="inProdUbicacion" value="Durazno, Uruguay" placeholder="Ej: Salto, Uruguay / Córdoba, Argentina">
+          </div>
+          <div class="field">
+            <label for="inProdManejo">Enfoque / Manejo Productivo</label>
+            <input type="text" id="inProdManejo" value="Pastoreo Rotativo Voisin y Recría" placeholder="Ej: Ciclo Completo / Feedlot / Agricultura">
+          </div>
+        </div>
+        <div class="field">
+          <label>Desafíos prioritarios a resolver en el campo:</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="chkDesafio1" checked> Información dispersa en planillas de Excel, cuadernos y mensajes de WhatsApp</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkDesafio2" checked> Falta de reportes e información al día para tomar decisiones estratégicas a tiempo</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkDesafio3" checked> Procesos de trabajo no estandarizados entre los establecimientos y el equipo</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkDesafio4" checked> Exigencias crecientes de trazabilidad oficial (SNIG / DICOSE / Guías) y certificaciones</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkDesafio5"> Medición de huella de carbono y atributos diferenciales para mercados de valor</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="inProdAsesor">Asesor Comercial Emisor (RanchGPT)</label>
+          <select id="inProdAsesor">
+            <option value="Ana Kaitazoff — Ing. Agr. Responsable Comercial" selected>Ana Kaitazoff — Ing. Agr. Responsable Comercial</option>
+            <option value="Adrián Zanoni — Responsable del Proyecto RanchGPT">Adrián Zanoni — Responsable del Proyecto RanchGPT</option>
+            <option value="María Eugenia Montans — Ing. Agr. Responsable de Operaciones">María Eugenia Montans — Ing. Agr. Responsable de Operaciones</option>
+            <option value="Rodrigo Bosch — Ing. Agr. Referente Argentina">Rodrigo Bosch — Ing. Agr. Referente Argentina</option>
+            <option value="Esteban Hoffman — Ing. Agr. Asesor Módulo Agrícola">Esteban Hoffman — Ing. Agr. Asesor Módulo Agrícola</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SISTEMA PRODUCTIVO -->
       <div class="card">
         <h2>Sistema productivo</h2>
         <p class="hint">Define las variables de dimensionamiento y los márgenes de referencia para estimar la renta.</p>
@@ -607,8 +1078,13 @@
         <div class="alert warn" id="alertWarn"></div>
         <div class="alert danger" id="alertDanger"></div>
 
+        <button type="button" class="btn-pdf" id="btnOpenPdfModal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 1.5v3A1.5 1.5 0 0 0 11 6h3s-4 4-4 4H9.5z"/><path d="M4.603 12.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.997-.757.51-.205 1.179-.345 1.948-.415a13.3 13.3 0 0 1 1.732-.07 10.6 10.6 0 0 1 2.012.222c.48.096.936.242 1.348.441.408.196.72.443.918.731.192.281.25.617.158.956a.82.82 0 0 1-.418.472c-.22.115-.49.167-.798.156a3.8 3.8 0 0 1-1.256-.254 12.5 12.5 0 0 1-2.227-.923 11.7 11.7 0 0 1-2.096 1.055 4.3 4.3 0 0 1-1.391.319 1.4 1.4 0 0 1-.57-.087z"/></svg>
+          Generar Propuesta PDF
+        </button>
+
         <button type="button" class="btn-hs" id="btnOpenHsModal">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: text-bottom;"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M4.882 1.734a.75.75 0 0 1 .412.983c-.385.89-.6 1.87-.6 2.902 0 3.73 3.037 6.758 6.772 6.758.358 0 .708-.027 1.05-.08a.75.75 0 1 1 .232 1.482c-.42.065-.85.098-1.282.098-4.568 0-8.272-3.69-8.272-8.258 0-1.288.293-2.508.815-3.606a.75.75 0 0 1 .873-.277M11.662.662a.75.75 0 0 1 .792-.12c.31.137.595.342.846.608a.75.75 0 0 1-1.077 1.043c-.097-.102-.206-.182-.323-.234a.75.75 0 0 1-.238-1.297"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M4.882 1.734a.75.75 0 0 1 .412.983c-.385.89-.6 1.87-.6 2.902 0 3.73 3.037 6.758 6.772 6.758.358 0 .708-.027 1.05-.08a.75.75 0 1 1 .232 1.482c-.42.065-.85.098-1.282.098-4.568 0-8.272-3.69-8.272-8.258 0-1.288.293-2.508.815-3.606a.75.75 0 0 1 .873-.277M11.662.662a.75.75 0 0 1 .792-.12c.31.137.595.342.846.608a.75.75 0 0 1-1.077 1.043c-.097-.102-.206-.182-.323-.234a.75.75 0 0 1-.238-1.297"/></svg>
           Registrar Lead en HubSpot
         </button>
       </div>
@@ -678,13 +1154,32 @@
   </div>
 </dialog>
 
+<!-- Modal PDF Preview & Generation -->
+<dialog id="pdfModal" class="pdf-modal-dialog">
+  <div class="pdf-modal-content">
+    <div class="pdf-modal-header">
+      <h3>Vista Previa de Propuesta Comercial (PDF)</h3>
+      <button type="button" class="pdf-close" id="btnClosePdfModal">&times;</button>
+    </div>
+    <div class="pdf-modal-body">
+      <div id="pdfRenderArea"></div>
+    </div>
+    <div class="pdf-modal-footer">
+      <button type="button" class="btn-cancel" id="btnCancelPdf">Cerrar</button>
+      <button type="button" class="btn-secondary-pdf" id="btnPrintPdf">Imprimir / Vista Navegador</button>
+      <button type="button" class="btn-action-pdf" id="btnDownloadPdf">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+        Descargar PDF
+      </button>
+    </div>
+  </div>
+</dialog>
+
 <script>
 // ================= Credenciales de Acceso =================
 const CREDENTIALS = {
   'admin': 'ranchgpt2026',
   'ana.kaitazoff@ranchgpt.com': 'Ranch2026'
-  // Para agregar un usuario nuevo, añade una línea aquí:
-  // 'nombre_usuario': 'contraseña_secreta'
 };
 
 // ================= Configuración del Modelo =================
@@ -795,6 +1290,20 @@ function saveState() {
   const state = {
     sistema: sistema,
     comap: comap,
+    producer: {
+      nombre: $('inProdNombre').value,
+      contacto: $('inProdContacto').value,
+      ubicacion: $('inProdUbicacion').value,
+      manejo: $('inProdManejo').value,
+      desafios: {
+        d1: $('chkDesafio1').checked,
+        d2: $('chkDesafio2').checked,
+        d3: $('chkDesafio3').checked,
+        d4: $('chkDesafio4').checked,
+        d5: $('chkDesafio5').checked
+      },
+      asesor: $('inProdAsesor').value
+    },
     inputs: {
       inEstab: $('inEstab').value,
       inArea: $('inArea').value,
@@ -864,9 +1373,22 @@ function loadState() {
     const slider = $('inDescuento');
     slider.disabled = comap;
     $('fieldDescuento').style.opacity = comap ? .45 : 1;
-    $('hintDesc').textContent = comap
-      ? 'Con Proyecto COMAP la suscripción del año 1 se factura completa (sin bonificación), para que integre la inversión del proyecto.'
-      : 'El año 1 se cobra el setup. La suscripción del año 1 puede bonificarse total o parcialmente.';
+
+    // Producer inputs
+    if (state.producer) {
+      if (state.producer.nombre !== undefined) $('inProdNombre').value = state.producer.nombre;
+      if (state.producer.contacto !== undefined) $('inProdContacto').value = state.producer.contacto;
+      if (state.producer.ubicacion !== undefined) $('inProdUbicacion').value = state.producer.ubicacion;
+      if (state.producer.manejo !== undefined) $('inProdManejo').value = state.producer.manejo;
+      if (state.producer.asesor !== undefined) $('inProdAsesor').value = state.producer.asesor;
+      if (state.producer.desafios) {
+        if (state.producer.desafios.d1 !== undefined) $('chkDesafio1').checked = state.producer.desafios.d1;
+        if (state.producer.desafios.d2 !== undefined) $('chkDesafio2').checked = state.producer.desafios.d2;
+        if (state.producer.desafios.d3 !== undefined) $('chkDesafio3').checked = state.producer.desafios.d3;
+        if (state.producer.desafios.d4 !== undefined) $('chkDesafio4').checked = state.producer.desafios.d4;
+        if (state.producer.desafios.d5 !== undefined) $('chkDesafio5').checked = state.producer.desafios.d5;
+      }
+    }
 
     // inputs
     if (state.inputs) {
@@ -914,7 +1436,7 @@ function loadState() {
 }
 
 $('btnResetDefaults').addEventListener('click', () => {
-  if (confirm('¿Estás seguro de que deseas restablecer todos los parámetros y la integración de HubSpot a sus valores por defecto?')) {
+  if (confirm('¿Estás seguro de que deseas restablecer todos los parámetros y la integración a sus valores por defecto?')) {
     localStorage.removeItem('ranchgpt_cotizador_state');
     window.location.reload();
   }
@@ -1097,6 +1619,539 @@ function calc(){
   }
 }
 
+// ================= Generador de Propuesta PDF =================
+function buildPdfHtml() {
+  const prodNombre = $('inProdNombre').value.trim() || 'Establecimiento Agropecuario';
+  const prodContacto = $('inProdContacto').value.trim() || 'Dirección General';
+  const prodUbicacion = $('inProdUbicacion').value.trim() || 'Uruguay / Argentina';
+  const prodManejo = $('inProdManejo').value.trim() || 'Pastoreo Rotativo y Producción Mixta';
+  const prodAsesor = $('inProdAsesor').value || 'Ana Kaitazoff — Ing. Agr. Responsable Comercial';
+
+  const estab = $('inEstab').value;
+  const areaTotal = Math.round(+$('inArea').value||0).toLocaleString('es-UY');
+  const cabezas = Math.round(+$('inCabezas').value||0).toLocaleString('es-UY');
+  const plan = $('planBadge').textContent;
+  
+  const setupVal = $('vSetup').textContent;
+  const subAno1Val = $('vSubAno1').textContent;
+  const subListaVal = $('vSub').textContent;
+  const subMensualVal = $('vMensual').textContent;
+  const totalAno1Val = $('vAno1').textContent;
+
+  // Desafíos seleccionados
+  const desafios = [];
+  if ($('chkDesafio1').checked) desafios.push({ icon: '📦', title: 'Información dispersa', desc: 'Datos fragmentados en cuadernos, planillas Excel o mensajes de WhatsApp sin trazabilidad ni control.' });
+  if ($('chkDesafio2').checked) desafios.push({ icon: '📊', title: 'Decisiones sin datos al día', desc: 'Información y reportes de producción o costos que llegan tarde para hacer correcciones oportunas.' });
+  if ($('chkDesafio3').checked) desafios.push({ icon: '⚙️', title: 'Falta de procesos unificados', desc: 'Cada campo o encargado trabaja con criterios propios, perdiendo estandarización y comparabilidad.' });
+  if ($('chkDesafio4').checked) desafios.push({ icon: '📈', title: 'Exigencias de trazabilidad', desc: 'Requisitos crecientes de trazabilidad oficial (SNIG / DICOSE / Guías) y certificaciones que sobrepasan la gestión tradicional.' });
+  if ($('chkDesafio5').checked) desafios.push({ icon: '🟢', title: 'Medición de huella de carbono', desc: 'Necesidad de medir emisiones y atributos sustentables para acceder a mercados de mayor valor.' });
+
+  if (desafios.length === 0) {
+    desafios.push({ icon: '📦', title: 'Información dispersa', desc: 'Datos fragmentados en cuadernos, planillas Excel o mensajes de WhatsApp sin trazabilidad ni control.' });
+    desafios.push({ icon: '📊', title: 'Decisiones sin datos al día', desc: 'Información y reportes de producción o costos que llegan tarde para hacer correcciones oportunas.' });
+  }
+
+  const sysStr = sistema.charAt(0).toUpperCase() + sistema.slice(1);
+  const dateStr = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+
+  return `
+  <!-- PÁGINA 1: CARÁTULA -->
+  <div class="pdf-page pdf-cover">
+    <div>
+      <div class="pdf-cover-logo">Ranch<span>GPT</span></div>
+      <span class="pdf-cover-tag">Transformación Digital Agropecuaria</span>
+      <h1 class="pdf-cover-title">Transformación digital para impulsar la gestión de su campo</h1>
+      <p class="pdf-cover-subtitle">Propuesta de Gestión Integral y Control Operativo</p>
+      
+      <div class="pdf-cover-box">
+        <label>Propuesta preparada especialmente para:</label>
+        <h2>${prodNombre}</h2>
+        <p>Atención: <strong>${prodContacto}</strong></p>
+        <div class="pdf-cover-stats">
+          <div class="pdf-stat-item"><span>Escala:</span> <strong>${areaTotal} ha</strong></div>
+          ${sistema !== 'agricola' ? `<div class="pdf-stat-item"><span>Ganado:</span> <strong>${cabezas} cabezas</strong></div>` : ''}
+          <div class="pdf-stat-item"><span>Manejo:</span> <strong>${prodManejo}</strong></div>
+          <div class="pdf-stat-item"><span>Ubicación:</span> <strong>${prodUbicacion}</strong></div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:#9FB6BE; border-top:1px solid rgba(255,255,255,0.12); padding-top:16px;">
+      <span>Fecha: ${dateStr.toUpperCase()}</span>
+      <span>DOCUMENTO CONFIDENCIAL</span>
+      <span>RanchGPT · www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 2: QUIÉNES SOMOS Y EL DESAFÍO -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 2 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">01. Introducción</span>
+      <h2 class="pdf-section-title">Quiénes somos y El Desafío de la Operación</h2>
+      
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-bottom:24px;">
+        <h4 style="color:var(--petrol)">RanchGPT — Transformación Digital Agropecuaria</h4>
+        <p style="color:var(--petrol-deep)">
+          Somos la plataforma AgTech de referencia en transformación digital y operativa para empresas agropecuarias ganaderas, agrícolas y mixtas. Integramos gestión productiva, trazabilidad, información económica y sustentabilidad en una sola herramienta inteligente, respaldada por un equipo de ingenieros agrónomos que garantizan la adopción real de la tecnología en el trabajo diario.
+        </p>
+      </div>
+
+      <span class="pdf-section-tag">El Desafío</span>
+      <h3 style="font-size:15px; font-weight:700; color:var(--petrol); margin-bottom:12px;">Cuando la empresa agropecuaria crece, la gestión requiere más control</h3>
+      <p class="pdf-intro-p">
+        Con <strong>${areaTotal} ha</strong> y una operación de sistema <strong>${sysStr}</strong> en <strong>${prodUbicacion}</strong>, la toma de decisiones exige certezas. A medida que la escala aumenta, consolidar datos dispersos se vuelve un cuello de botella que compromete la rentabilidad.
+      </p>
+
+      <div class="pdf-grid-4">
+        ${desafios.map(d => `
+          <div class="pdf-card-box">
+            <h4><span>${d.icon}</span> ${d.title}</h4>
+            <p>${d.desc}</p>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--amber-soft); border-color:#F0D9A8; margin-top:16px;">
+        <p style="font-size:12px; font-weight:600; color:#8A6420;">
+          ⚠️ <strong>El costo real:</strong> No es solo tiempo perdido en planillas. Es certeza financiera comprometida, riesgos no mitigados y oportunidades de rentabilidad que se desaprovechan por falta de información a tiempo.
+        </p>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 3: ¿QUÉ ES RANCHGPT? VISIÓN 360 -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 3 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">02. La Solución</span>
+      <h2 class="pdf-section-title">¿Qué es RanchGPT? — Solución Integral 360°</h2>
+      <p class="pdf-intro-p">
+        RanchGPT reúne en un solo lugar la información productiva, económica, sanitaria y ambiental de su campo. Inteligencia artificial y procesos ordenados para transformar datos del campo en resultados de negocio.
+      </p>
+
+      <div class="pdf-flow">
+        <div class="pdf-flow-step">1. Del Campo al Dato</div>
+        <div class="pdf-flow-arrow">➔</div>
+        <div class="pdf-flow-step">2. Del Dato a la Decisión</div>
+        <div class="pdf-flow-arrow">➔</div>
+        <div class="pdf-flow-step">3. De la Decisión a los Resultados</div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin-bottom:14px;">Módulos de Trabajo Integrados (360 Farming):</h3>
+
+      <div class="pdf-grid-3">
+        <div class="pdf-card-box">
+          <h4>🌾 Agricultura</h4>
+          <p>Planificación de cultivos, potreros, labores agrícolas, rotaciones, insumos, cosecha y trazabilidad de campo.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>🐂 Ganadería</h4>
+          <p>Inventario de hacienda, pesadas, sanidad, reproducción, recría, terminación y feedlot con trazabilidad individual.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>🌿 Pasturas</h4>
+          <p>Disponibilidad de forraje, carga animal por potrero, rotaciones y proyecciones de pastoreo.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>💰 Finanzas y Stock</h4>
+          <p>Registro de compras, ventas, costos, ingresos, control de inventario y conciliación con sistemas contables.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>🟢 Sustentabilidad</h4>
+          <p>Huella de carbono equivalente, indicadores ambientales y atributos para acceder a mercados de mayor valor (ISO 14064).</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>📊 Reportes y BI</h4>
+          <p>Indicadores productivos, sanitarios y económicos al día para gerencia, administración y directorio.</p>
+        </div>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 4: PROPUESTA DE VALOR - 3 PILARES -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 4 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">03. Metodología</span>
+      <h2 class="pdf-section-title">Nuestra Propuesta de Valor — Los 3 Pilares</h2>
+      <p class="pdf-intro-p">
+        <strong>No es solo tecnología. Es transformación operativa con adopción real.</strong><br>
+        La tecnología por sí sola no transforma un campo. Para que los datos generen valor, se necesitan procesos claros, personas capacitadas y un equipo que acompañe el trabajo cotidiano.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:16px; margin-top:10px;">
+        <div class="pdf-pillar-card">
+          <div class="pdf-pillar-num">01. Pilar Tecnológico</div>
+          <h4>Tecnología Inteligente y Accesible (Digital)</h4>
+          <p>Plataforma SaaS utilizable desde la Web, la App Celular y WhatsApp. Funciona sin señal en el campo (offline-first). La capa conversacional con inteligencia artificial permite consultar datos enviando mensajes de texto o audios de voz sin curva de aprendizaje.</p>
+        </div>
+
+        <div class="pdf-pillar-card" style="background:#174452;">
+          <div class="pdf-pillar-num">02. Pilar de Procesos</div>
+          <h4>Estandarización y Calidad de Datos (Operativo)</h4>
+          <p>Diseñamos protocolos sencillos para la carga de datos en origen (nacimientos, pesadas, movimientos, tratamientos), validaciones automáticas y flujos de aprobación para eliminar errores y asegurar trazabilidad total (SNIG / DICOSE).</p>
+        </div>
+
+        <div class="pdf-pillar-card" style="background:#1f5567;">
+          <div class="pdf-pillar-num">03. Pilar de Personas</div>
+          <h4>Capacitación y Acompañamiento (Organizacional)</h4>
+          <p>Un equipo de ingenieros agrónomos capacita al personal de campo, administración y gerencia en su propio lugar de trabajo, monitorea la adopción semanal y ayuda a consolidar hábitos de gestión profesional.</p>
+        </div>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 5: PROYECTO DE IMPLEMENTACIÓN -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 5 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">04. Plan de Trabajo</span>
+      <h2 class="pdf-section-title">Proyecto de Implementación "Llave en Mano"</h2>
+      <p class="pdf-intro-p">
+        Un proceso estructurado de <strong>12 semanas</strong> para transformar la gestión operativa de su campo con el acompañamiento de nuestro equipo.
+      </p>
+
+      <div class="pdf-roadmap">
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">1</div>
+          <div class="pdf-roadmap-content">
+            <h5>Fase 1: Diagnóstico y Relevamiento (Semanas 1-2)</h5>
+            <p>Mapeo de procesos actuales, identificación de metas del establecimiento, definición de indicadores (KPI) y reportes de interés para la gerencia.</p>
+          </div>
+        </div>
+
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">2</div>
+          <div class="pdf-roadmap-content">
+            <h5>Fase 2: Configuración e Inicio (Semanas 3-5)</h5>
+            <p>Digitalización de mapas, carga inicial del stock de ganado (${cabezas} cabezas), uso de suelo, módulos financieros y configuración de usuarios y permisos.</p>
+          </div>
+        </div>
+
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">3</div>
+          <div class="pdf-roadmap-content">
+            <h5>Fase 3: Capacitación e Implementación (Semanas 6-8)</h5>
+            <p>Capacitación presencial in-situ por rol (campo, administración, gerencia), validación en ambiente de pruebas y puesta en marcha operativa del sistema.</p>
+          </div>
+        </div>
+
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">4</div>
+          <div class="pdf-roadmap-content">
+            <h5>Fase 4: Acompañamiento y Auditoría (Semanas 9-12)</h5>
+            <p>Soporte intensivo, ajuste de procesos, medición de adopción, reportes personalizados a medida y primera auditoría integrada de calidad de datos.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line);">
+        <h4 style="font-size:12.5px;">Equipo RanchGPT Asignado a su Proyecto:</h4>
+        <p style="font-size:11.5px; color:var(--muted); margin-top:4px;">
+          • <strong>Líder Agrónomo del Proyecto:</strong> Punto de contacto único dedicado.<br>
+          • <strong>Analista de Reportes:</strong> Especialista en la construcción de tableros ejecutivos.<br>
+          • <strong>Analista de Calidad de Datos:</strong> Encargado de la auditoría y limpieza de datos.<br>
+          • <strong>Soporte Técnico Extendido:</strong> Atención continua por WhatsApp y teléfono.
+        </p>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 6: CALIDAD DE DATOS Y ASESORES -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 6 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">05. Asegurar la Calidad</span>
+      <h2 class="pdf-section-title">Calidad de Datos y Empoderamiento Técnico</h2>
+      <p class="pdf-intro-p">
+        Funcionamos como su <strong>Oficina de Datos Externa</strong>. Revisamos la carga de información, auditamos consistencias y respaldamos el trabajo de sus asesores.
+      </p>
+
+      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin-bottom:10px;">Servicio de Auditoría Proactiva:</h3>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>Qué Hacemos</th>
+            <th>Valor para su Establecimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Monitoreo Semanal</strong></td>
+            <td>Revisamos la carga de datos de campo, validamos consistencia e identificamos anomalías a tiempo.</td>
+          </tr>
+          <tr>
+            <td><strong>Alertas Proactivas</strong></td>
+            <td>Si detectamos desvíos, se los informamos ANTES del cierre de mes, no después.</td>
+          </tr>
+          <tr>
+            <td><strong>Limpieza de Datos</strong></td>
+            <td>Corregimos registros duplicados, inconsistencias y errores de carga para que reciba datos validados.</td>
+          </tr>
+          <tr>
+            <td><strong>Conciliación Mensual</strong></td>
+            <td>Verificamos stock real físico vs. sistema vs. registros oficiales (SNIG / DICOSE / Guías).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin:20px 0 10px;">Empoderamiento de sus Asesores Técnicos:</h3>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th style="background:var(--red); color:#fff;">❌ ANTES (Sin RanchGPT)</th>
+            <th style="background:var(--mint); color:var(--petrol-deep);">✓ AHORA (Con RanchGPT)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>70% del tiempo perdido ordenando planillas Excel.</td>
+            <td><strong>100% del tiempo enfocado en la estrategia productiva.</strong></td>
+          </tr>
+          <tr>
+            <td>Datos desactualizados, incompletos o en la memoria.</td>
+            <td><strong>Información validad al día en tiempo real.</strong></td>
+          </tr>
+          <tr>
+            <td>Reportes manuales al final del mes.</td>
+            <td><strong>Tableros en vivo y proyecciones predictivas.</strong></td>
+          </tr>
+          <tr>
+            <td>Reacción tardía cuando el problema ya ocurrió.</td>
+            <td><strong>Anticipación, prevención y alertas de desvío.</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 7: INVERSIÓN PERSONALIZADA -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 7 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">06. Propuesta Económica</span>
+      <h2 class="pdf-section-title">Inversión Personalizada</h2>
+      <p class="pdf-intro-p">
+        Dimensionamiento para <strong>${areaTotal} ha</strong> (${sistema !== 'agricola' ? cabezas + ' cabezas' : 'área agrícola'}) en <strong>${estab} establecimiento(s)</strong>.
+      </p>
+
+      <div class="pdf-card-box" style="background:var(--petrol); color:#fff; padding:24px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:12px;">
+          <div>
+            <span style="font-size:11px; color:var(--mint); font-weight:700; text-transform:uppercase;">Plan Asignado</span>
+            <h3 style="font-size:22px; color:#fff; font-weight:800;">${plan}</h3>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px; color:#9FB6BE;">Equivalente Mensual (Año 2+)</span>
+            <div style="font-size:20px; font-weight:800; color:var(--mint);">${subMensualVal}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
+          <div style="display:flex; justify-content:space-between;"><span>Setup e Implementación Llave en Mano (Año 1):</span><strong>${setupVal}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Suscripción Año 1 (${comap ? 'COMAP' : 'Bonificada'}):</span><strong>${subAno1Val}</strong></div>
+          <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid rgba(255,255,255,0.15); font-size:15px; font-weight:700;">
+            <span>Total Inversión Año 1:</span><span style="color:var(--mint); font-size:18px;">${totalAno1Val}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:12.5px; color:#C6D4D9;">
+            <span>Suscripción Anual Lista (Año 2 en adelante):</span><strong>${subListaVal} /año</strong>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin-bottom:10px;">Su inversión incluye de forma integral:</h3>
+      <div class="pdf-grid-2">
+        <div class="pdf-card-box">✓ Plataforma SaaS RanchGPT (Web, Móvil y WhatsApp conversacional)</div>
+        <div class="pdf-card-box">✓ Proyecto de implementación llave en mano de 12 semanas</div>
+        <div class="pdf-card-box">✓ Líder técnico agrónomo dedicado a su cuenta</div>
+        <div class="pdf-card-box">✓ Auditoría semanal de datos y conciliación con DICOSE / SNIG</div>
+        <div class="pdf-card-box">✓ Tableros de Inteligencia de Negocios (BI) para la gerencia</div>
+        <div class="pdf-card-box">✓ Módulo de Huella de Carbono y trazabilidad exportable</div>
+        <div class="pdf-card-box">✓ Capacitación presencial al personal y soporte continuo</div>
+        <div class="pdf-card-box">✓ Actualizaciones continuas del sistema e inteligencia artificial</div>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 8: PRÓXIMOS PASOS Y CONTACTO -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 8 de 8</div>
+      </div>
+
+      <span class="pdf-section-tag">07. Siguientes Pasos</span>
+      <h2 class="pdf-section-title">Próximos Pasos para Iniciar</h2>
+      <p class="pdf-intro-p">
+        Acompañamos a su empresa agropecuaria a dar el salto de profesionalización en la gestión de su campo.
+      </p>
+
+      <div class="pdf-roadmap" style="margin-bottom:30px;">
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">1</div>
+          <div class="pdf-roadmap-content">
+            <h5>Revisión de esta propuesta</h5>
+            <p>Análisis de los alcances y la cotización con su equipo de dirección y asesores técnicos.</p>
+          </div>
+        </div>
+
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">2</div>
+          <div class="pdf-roadmap-content">
+            <h5>Demostración guiada en vivo (1.5 hrs)</h5>
+            <p>Presentación ejecutiva y recorrido práctico por la plataforma con datos de su sistema productivo.</p>
+          </div>
+        </div>
+
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">3</div>
+          <div class="pdf-roadmap-content">
+            <h5>Firma de acuerdo y modalidades de pago</h5>
+            <p>Formalización de la alianza estratégica y definición de la modalidad de pago elegida.</p>
+          </div>
+        </div>
+
+        <div class="pdf-roadmap-item">
+          <div class="pdf-roadmap-badge">4</div>
+          <div class="pdf-roadmap-content">
+            <h5>Kick-off de implementación</h5>
+            <p>Inicio inmediato del proyecto de 12 semanas con el equipo agrónomo asignado.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; text-align:center; padding:24px; margin-bottom:30px;">
+        <h3 style="font-size:16px; color:var(--petrol); font-weight:800; margin-bottom:6px;">"Transformamos los datos de su campo en mejores decisiones para su negocio."</h3>
+        <p style="font-size:12px; color:var(--petrol-deep);">No vendemos software. Ejecutamos transformación digital con certeza de resultados.</p>
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line); padding:20px;">
+        <div style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700;">Asesor Comercial Emisor:</div>
+        <div style="font-size:15px; font-weight:700; color:var(--petrol); margin-top:2px;">${prodAsesor}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+          RanchGPT · Nomer Company S.A.<br>
+          Email: contacto@ranchgpt.com | Sitio Web: www.ranchgpt.com<br>
+          <span style="font-size:11px; opacity:0.8;">Validez de la propuesta: 30 días a partir de su emisión.</span>
+        </div>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+  `;
+}
+
+// ================= Modal & Acciones PDF =================
+const pdfModal = $('pdfModal');
+const btnOpenPdfModal = $('btnOpenPdfModal');
+const btnClosePdfModal = $('btnClosePdfModal');
+const btnCancelPdf = $('btnCancelPdf');
+const btnDownloadPdf = $('btnDownloadPdf');
+const btnPrintPdf = $('btnPrintPdf');
+
+btnOpenPdfModal.addEventListener('click', () => {
+  const pdfHtml = buildPdfHtml();
+  $('pdfRenderArea').innerHTML = pdfHtml;
+  pdfModal.showModal();
+});
+
+const closePdfModal = () => {
+  pdfModal.close();
+};
+
+btnClosePdfModal.addEventListener('click', closePdfModal);
+btnCancelPdf.addEventListener('click', closePdfModal);
+
+btnPrintPdf.addEventListener('click', () => {
+  window.print();
+});
+
+btnDownloadPdf.addEventListener('click', async () => {
+  const element = $('pdfRenderArea');
+  const prodNombre = ($('inProdNombre').value.trim() || 'Productor').replace(/[^a-zA-Z0-9_-]/g, '_');
+  
+  btnDownloadPdf.disabled = true;
+  btnDownloadPdf.textContent = 'Generando PDF...';
+
+  const opt = {
+    margin: 0,
+    filename: `Propuesta_RanchGPT_${prodNombre}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    if (window.html2pdf) {
+      await html2pdf().set(opt).from(element).save();
+    } else {
+      window.print();
+    }
+  } catch (err) {
+    console.error('Error al generar PDF:', err);
+    alert('No se pudo generar el archivo PDF automáticamente. Se abrirá la ventana de impresión para que puedas guardarlo como PDF.');
+    window.print();
+  } finally {
+    btnDownloadPdf.disabled = false;
+    btnDownloadPdf.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+      Descargar PDF
+    `;
+  }
+});
+
 // ================= Integración HubSpot =================
 const hsModal = $('hsModal');
 const btnOpenHsModal = $('btnOpenHsModal');
@@ -1138,6 +2193,11 @@ btnOpenHsModal.addEventListener('click', () => {
     <li><span>Suscripción anual:</span> <span>${subVal}</span></li>
   `;
   $('hsQuoteSummaryList').innerHTML = detailsList;
+  
+  // Pre-llenar empresa con el nombre del productor si existe
+  if ($('inProdNombre').value.trim() && !$('hsCompany').value.trim()) {
+    $('hsCompany').value = $('inProdNombre').value.trim();
+  }
   
   // Resetear estados de respuesta anteriores
   $('hsSuccess').style.display = 'none';
@@ -1182,6 +2242,9 @@ hsForm.addEventListener('submit', async (e) => {
   
   const message = `Detalles de Cotización RanchGPT:
 ------------------------------
+Productor / Empresa: ${$('inProdNombre').value}
+Contacto / Cargo: ${$('inProdContacto').value}
+Ubicación: ${$('inProdUbicacion').value}
 Plan asignado: ${plan}
 Sistema productivo: ${sistema}
 Establecimientos: ${estab}
