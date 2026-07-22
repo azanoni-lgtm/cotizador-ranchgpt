@@ -512,15 +512,20 @@
   }
   .pdf-page {
     width: 210mm;
-    min-height: 297mm;
+    height: 297mm;
+    max-height: 297mm;
     background: #fff;
     color: #22343C;
     font-family: 'Poppins', sans-serif;
-    padding: 24mm 20mm;
+    padding: 16mm 16mm;
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+    break-inside: avoid;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -530,11 +535,13 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid var(--mint);
-    padding-bottom: 12px;
-    margin-bottom: 24px;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    height: 32px;
+    flex-shrink: 0;
   }
   .pdf-header .pdf-logo {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--petrol);
   }
@@ -542,94 +549,96 @@
     color: var(--mint);
   }
   .pdf-header .pdf-doc-type {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
   }
   .pdf-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-top: 1px solid var(--line);
-    padding-top: 12px;
+    padding-top: 10px;
     margin-top: auto;
-    font-size: 10px;
+    font-size: 9.5px;
     color: var(--muted);
+    height: 24px;
+    flex-shrink: 0;
   }
 
   /* Cover Page */
   .pdf-cover {
     background: linear-gradient(135deg, var(--petrol-deep) 0%, var(--petrol) 100%);
     color: #fff;
-    padding: 30mm 20mm 20mm;
+    padding: 20mm 16mm 16mm;
   }
   .pdf-cover-logo {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 800;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
   }
   .pdf-cover-logo span { color: var(--mint); }
   .pdf-cover-tag {
     display: inline-block;
     background: rgba(9, 188, 138, 0.15);
     color: var(--mint);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 99px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
   .pdf-cover-title {
-    font-size: 28px;
+    font-size: 25px;
     font-weight: 800;
     line-height: 1.25;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     color: #ffffff;
   }
   .pdf-cover-subtitle {
-    font-size: 16px;
+    font-size: 15px;
     color: #9FB6BE;
     font-weight: 500;
-    margin-bottom: 50px;
+    margin-bottom: 36px;
   }
   .pdf-cover-box {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 40px;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 30px;
   }
   .pdf-cover-box label {
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--mint);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 700;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
   .pdf-cover-box h2 {
-    font-size: 22px;
+    font-size: 20px;
     color: #fff;
     font-weight: 700;
     margin-bottom: 4px;
   }
   .pdf-cover-box p {
-    font-size: 13px;
+    font-size: 12px;
     color: #C6D4D9;
   }
   .pdf-cover-stats {
     display: flex;
-    gap: 16px;
-    margin-top: 16px;
-    padding-top: 16px;
+    gap: 14px;
+    margin-top: 14px;
+    padding-top: 14px;
     border-top: 1px solid rgba(255,255,255,0.1);
   }
   .pdf-stat-item {
-    font-size: 12px;
+    font-size: 11.5px;
     color: #fff;
   }
   .pdf-stat-item span {
@@ -638,91 +647,91 @@
 
   /* Grid Layouts inside PDF */
   .pdf-section-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--petrol);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
   .pdf-section-tag {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     color: var(--mint);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     display: block;
   }
   .pdf-intro-p {
-    font-size: 12.5px;
+    font-size: 11.5px;
     color: var(--muted);
-    margin-bottom: 20px;
-    line-height: 1.5;
+    margin-bottom: 16px;
+    line-height: 1.45;
   }
 
   .pdf-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 14px;
   }
   .pdf-grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
   .pdf-grid-4 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
   .pdf-card-box {
     background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 12px 14px;
   }
   .pdf-card-box h4 {
-    font-size: 13.5px;
+    font-size: 12.5px;
     font-weight: 700;
     color: var(--petrol);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .pdf-card-box p {
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--ink);
-    line-height: 1.45;
+    line-height: 1.4;
   }
 
   .pdf-pillar-card {
     background: var(--petrol);
     color: #fff;
-    border-radius: 14px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 16px;
   }
   .pdf-pillar-num {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 800;
     color: var(--mint);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
   .pdf-pillar-card h4 {
-    font-size: 16px;
+    font-size: 14.5px;
     color: #fff;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .pdf-pillar-card p {
-    font-size: 11.5px;
+    font-size: 11px;
     color: #C6D4D9;
-    line-height: 1.45;
+    line-height: 1.4;
   }
 
   .pdf-flow {
@@ -731,44 +740,44 @@
     justify-content: space-between;
     background: var(--petrol);
     color: #fff;
-    border-radius: 12px;
-    padding: 16px 24px;
-    margin-bottom: 24px;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
   }
   .pdf-flow-step {
     text-align: center;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 12px;
   }
   .pdf-flow-arrow {
     color: var(--mint);
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
   }
 
   .pdf-roadmap {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
   .pdf-roadmap-item {
     display: flex;
     align-items: flex-start;
-    gap: 14px;
+    gap: 12px;
     background: #fff;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 10px;
+    padding: 10px 12px;
   }
   .pdf-roadmap-badge {
     background: var(--mint-soft);
     color: var(--mint);
     border: 1px solid #C2F0E2;
     font-weight: 800;
-    font-size: 13px;
-    width: 36px;
-    height: 36px;
+    font-size: 12px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -776,12 +785,12 @@
     flex-shrink: 0;
   }
   .pdf-roadmap-content h5 {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--petrol);
   }
   .pdf-roadmap-content p {
-    font-size: 11.5px;
+    font-size: 10.5px;
     color: var(--muted);
     margin-top: 2px;
   }
@@ -789,20 +798,20 @@
   .pdf-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 11.5px;
-    margin-bottom: 16px;
+    font-size: 11px;
+    margin-bottom: 14px;
   }
   .pdf-table th {
     background: var(--petrol);
     color: #fff;
-    font-size: 11px;
+    font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 8px 12px;
+    padding: 6px 10px;
     text-align: left;
   }
   .pdf-table td {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-bottom: 1px solid var(--line);
   }
   .pdf-table tr:nth-child(even) td {
@@ -810,29 +819,40 @@
   }
 
   @media print {
-    body { background: #fff; }
-    #appContent, #loginOverlay, .hs-dialog, .pdf-modal-header, .pdf-modal-footer {
-      display: none !important;
+    @page {
+      size: A4 portrait;
+      margin: 0;
     }
-    .pdf-modal-dialog {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      transform: none !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      height: auto !important;
-      box-shadow: none !important;
-    }
-    .pdf-modal-body {
+    html, body {
+      width: 210mm !important;
+      height: 297mm !important;
+      margin: 0 !important;
       padding: 0 !important;
       background: #fff !important;
+      overflow: visible !important;
+    }
+    body * {
+      visibility: hidden !important;
+    }
+    #pdfRenderArea, #pdfRenderArea * {
+      visibility: visible !important;
+    }
+    #pdfRenderArea {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 210mm !important;
     }
     .pdf-page {
       box-shadow: none !important;
       margin: 0 !important;
       width: 210mm !important;
-      min-height: 297mm !important;
+      height: 297mm !important;
+      max-height: 297mm !important;
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+      break-after: page !important;
+      break-inside: avoid !important;
     }
   }
 </style>
@@ -1676,7 +1696,7 @@ function buildPdfHtml() {
       </div>
     </div>
     
-    <div style="display:flex; justify-content:space-between; font-size:11px; color:#9FB6BE; border-top:1px solid rgba(255,255,255,0.12); padding-top:16px;">
+    <div style="display:flex; justify-content:space-between; font-size:10px; color:#9FB6BE; border-top:1px solid rgba(255,255,255,0.12); padding-top:12px;">
       <span>Fecha: ${dateStr.toUpperCase()}</span>
       <span>DOCUMENTO CONFIDENCIAL</span>
       <span>RanchGPT · www.ranchgpt.com</span>
@@ -1694,7 +1714,7 @@ function buildPdfHtml() {
       <span class="pdf-section-tag">01. Introducción</span>
       <h2 class="pdf-section-title">Quiénes somos y El Desafío de la Operación</h2>
       
-      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-bottom:24px;">
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-bottom:14px;">
         <h4 style="color:var(--petrol)">RanchGPT — Transformación Digital Agropecuaria</h4>
         <p style="color:var(--petrol-deep)">
           Somos la plataforma AgTech de referencia en transformación digital y operativa para empresas agropecuarias ganaderas, agrícolas y mixtas. Integramos gestión productiva, trazabilidad, información económica y sustentabilidad en una sola herramienta inteligente, respaldada por un equipo de ingenieros agrónomos que garantizan la adopción real de la tecnología en el trabajo diario.
@@ -1702,8 +1722,8 @@ function buildPdfHtml() {
       </div>
 
       <span class="pdf-section-tag">El Desafío</span>
-      <h3 style="font-size:15px; font-weight:700; color:var(--petrol); margin-bottom:12px;">Cuando la empresa agropecuaria crece, la gestión requiere más control</h3>
-      <p class="pdf-intro-p">
+      <h3 style="font-size:13.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Cuando la empresa agropecuaria crece, la gestión requiere más control</h3>
+      <p class="pdf-intro-p" style="margin-bottom:12px;">
         Con <strong>${areaTotal} ha</strong> y una operación de sistema <strong>${sysStr}</strong> en <strong>${prodUbicacion}</strong>, la toma de decisiones exige certezas. A medida que la escala aumenta, consolidar datos dispersos se vuelve un cuello de botella que compromete la rentabilidad.
       </p>
 
@@ -1716,8 +1736,8 @@ function buildPdfHtml() {
         `).join('')}
       </div>
 
-      <div class="pdf-card-box" style="background:var(--amber-soft); border-color:#F0D9A8; margin-top:16px;">
-        <p style="font-size:12px; font-weight:600; color:#8A6420;">
+      <div class="pdf-card-box" style="background:var(--amber-soft); border-color:#F0D9A8; margin-top:10px;">
+        <p style="font-size:11px; font-weight:600; color:#8A6420;">
           ⚠️ <strong>El costo real:</strong> No es solo tiempo perdido en planillas. Es certeza financiera comprometida, riesgos no mitigados y oportunidades de rentabilidad que se desaprovechan por falta de información a tiempo.
         </p>
       </div>
@@ -1750,7 +1770,7 @@ function buildPdfHtml() {
         <div class="pdf-flow-step">3. De la Decisión a los Resultados</div>
       </div>
 
-      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin-bottom:14px;">Módulos de Trabajo Integrados (360 Farming):</h3>
+      <h3 style="font-size:13px; font-weight:700; color:var(--petrol); margin-bottom:10px;">Módulos de Trabajo Integrados (360 Farming):</h3>
 
       <div class="pdf-grid-3">
         <div class="pdf-card-box">
@@ -1800,7 +1820,7 @@ function buildPdfHtml() {
         La tecnología por sí sola no transforma un campo. Para que los datos generen valor, se necesitan procesos claros, personas capacitadas y un equipo que acompañe el trabajo cotidiano.
       </p>
 
-      <div style="display:flex; flex-direction:column; gap:16px; margin-top:10px;">
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:6px;">
         <div class="pdf-pillar-card">
           <div class="pdf-pillar-num">01. Pilar Tecnológico</div>
           <h4>Tecnología Inteligente y Accesible (Digital)</h4>
@@ -1874,9 +1894,9 @@ function buildPdfHtml() {
         </div>
       </div>
 
-      <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line);">
-        <h4 style="font-size:12.5px;">Equipo RanchGPT Asignado a su Proyecto:</h4>
-        <p style="font-size:11.5px; color:var(--muted); margin-top:4px;">
+      <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line); padding:10px 12px; margin-top:8px;">
+        <h4 style="font-size:12px;">Equipo RanchGPT Asignado a su Proyecto:</h4>
+        <p style="font-size:10.5px; color:var(--muted); margin-top:2px;">
           • <strong>Líder Agrónomo del Proyecto:</strong> Punto de contacto único dedicado.<br>
           • <strong>Analista de Reportes:</strong> Especialista en la construcción de tableros ejecutivos.<br>
           • <strong>Analista de Calidad de Datos:</strong> Encargado de la auditoría y limpieza de datos.<br>
@@ -1900,11 +1920,11 @@ function buildPdfHtml() {
 
       <span class="pdf-section-tag">05. Asegurar la Calidad</span>
       <h2 class="pdf-section-title">Calidad de Datos y Empoderamiento Técnico</h2>
-      <p class="pdf-intro-p">
+      <p class="pdf-intro-p" style="margin-bottom:12px;">
         Funcionamos como su <strong>Oficina de Datos Externa</strong>. Revisamos la carga de información, auditamos consistencias y respaldamos el trabajo de sus asesores.
       </p>
 
-      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin-bottom:10px;">Servicio de Auditoría Proactiva:</h3>
+      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Servicio de Auditoría Proactiva:</h3>
       <table class="pdf-table">
         <thead>
           <tr>
@@ -1932,7 +1952,7 @@ function buildPdfHtml() {
         </tbody>
       </table>
 
-      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin:20px 0 10px;">Empoderamiento de sus Asesores Técnicos:</h3>
+      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin:14px 0 8px;">Empoderamiento de sus Asesores Técnicos:</h3>
       <table class="pdf-table">
         <thead>
           <tr>
@@ -1976,35 +1996,35 @@ function buildPdfHtml() {
 
       <span class="pdf-section-tag">06. Propuesta Económica</span>
       <h2 class="pdf-section-title">Inversión Personalizada</h2>
-      <p class="pdf-intro-p">
+      <p class="pdf-intro-p" style="margin-bottom:12px;">
         Dimensionamiento para <strong>${areaTotal} ha</strong> (${sistema !== 'agricola' ? cabezas + ' cabezas' : 'área agrícola'}) en <strong>${estab} establecimiento(s)</strong>.
       </p>
 
-      <div class="pdf-card-box" style="background:var(--petrol); color:#fff; padding:24px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:12px;">
+      <div class="pdf-card-box" style="background:var(--petrol); color:#fff; padding:18px; margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:8px;">
           <div>
-            <span style="font-size:11px; color:var(--mint); font-weight:700; text-transform:uppercase;">Plan Asignado</span>
-            <h3 style="font-size:22px; color:#fff; font-weight:800;">${plan}</h3>
+            <span style="font-size:10px; color:var(--mint); font-weight:700; text-transform:uppercase;">Plan Asignado</span>
+            <h3 style="font-size:20px; color:#fff; font-weight:800;">${plan}</h3>
           </div>
           <div style="text-align:right;">
-            <span style="font-size:11px; color:#9FB6BE;">Equivalente Mensual (Año 2+)</span>
-            <div style="font-size:20px; font-weight:800; color:var(--mint);">${subMensualVal}</div>
+            <span style="font-size:10px; color:#9FB6BE;">Equivalente Mensual (Año 2+)</span>
+            <div style="font-size:18px; font-weight:800; color:var(--mint);">${subMensualVal}</div>
           </div>
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
           <div style="display:flex; justify-content:space-between;"><span>Setup e Implementación Llave en Mano (Año 1):</span><strong>${setupVal}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Suscripción Año 1 (${comap ? 'COMAP' : 'Bonificada'}):</span><strong>${subAno1Val}</strong></div>
-          <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid rgba(255,255,255,0.15); font-size:15px; font-weight:700;">
-            <span>Total Inversión Año 1:</span><span style="color:var(--mint); font-size:18px;">${totalAno1Val}</span>
+          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:14px; font-weight:700;">
+            <span>Total Inversión Año 1:</span><span style="color:var(--mint); font-size:16px;">${totalAno1Val}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:12.5px; color:#C6D4D9;">
+          <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:11.5px; color:#C6D4D9;">
             <span>Suscripción Anual Lista (Año 2 en adelante):</span><strong>${subListaVal} /año</strong>
           </div>
         </div>
       </div>
 
-      <h3 style="font-size:14px; font-weight:700; color:var(--petrol); margin-bottom:10px;">Su inversión incluye de forma integral:</h3>
+      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Su inversión incluye de forma integral:</h3>
       <div class="pdf-grid-2">
         <div class="pdf-card-box">✓ Plataforma SaaS RanchGPT (Web, Móvil y WhatsApp conversacional)</div>
         <div class="pdf-card-box">✓ Proyecto de implementación llave en mano de 12 semanas</div>
@@ -2032,11 +2052,11 @@ function buildPdfHtml() {
 
       <span class="pdf-section-tag">07. Siguientes Pasos</span>
       <h2 class="pdf-section-title">Próximos Pasos para Iniciar</h2>
-      <p class="pdf-intro-p">
+      <p class="pdf-intro-p" style="margin-bottom:12px;">
         Acompañamos a su empresa agropecuaria a dar el salto de profesionalización en la gestión de su campo.
       </p>
 
-      <div class="pdf-roadmap" style="margin-bottom:30px;">
+      <div class="pdf-roadmap" style="margin-bottom:16px;">
         <div class="pdf-roadmap-item">
           <div class="pdf-roadmap-badge">1</div>
           <div class="pdf-roadmap-content">
@@ -2070,18 +2090,18 @@ function buildPdfHtml() {
         </div>
       </div>
 
-      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; text-align:center; padding:24px; margin-bottom:30px;">
-        <h3 style="font-size:16px; color:var(--petrol); font-weight:800; margin-bottom:6px;">"Transformamos los datos de su campo en mejores decisiones para su negocio."</h3>
-        <p style="font-size:12px; color:var(--petrol-deep);">No vendemos software. Ejecutamos transformación digital con certeza de resultados.</p>
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; text-align:center; padding:16px; margin-bottom:16px;">
+        <h3 style="font-size:14.5px; color:var(--petrol); font-weight:800; margin-bottom:4px;">"Transformamos los datos de su campo en mejores decisiones para su negocio."</h3>
+        <p style="font-size:11px; color:var(--petrol-deep);">No vendemos software. Ejecutamos transformación digital con certeza de resultados.</p>
       </div>
 
-      <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line); padding:20px;">
-        <div style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700;">Asesor Comercial Emisor:</div>
-        <div style="font-size:15px; font-weight:700; color:var(--petrol); margin-top:2px;">${prodAsesor}</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+      <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line); padding:14px;">
+        <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700;">Asesor Comercial Emisor:</div>
+        <div style="font-size:14px; font-weight:700; color:var(--petrol); margin-top:2px;">${prodAsesor}</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;">
           RanchGPT · Nomer Company S.A.<br>
           Email: contacto@ranchgpt.com | Sitio Web: www.ranchgpt.com<br>
-          <span style="font-size:11px; opacity:0.8;">Validez de la propuesta: 30 días a partir de su emisión.</span>
+          <span style="font-size:10px; opacity:0.8;">Validez de la propuesta: 30 días a partir de su emisión.</span>
         </div>
       </div>
     </div>
@@ -2129,8 +2149,15 @@ btnDownloadPdf.addEventListener('click', async () => {
     margin: 0,
     filename: `Propuesta_RanchGPT_${prodNombre}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      logging: false,
+      scrollY: 0,
+      windowWidth: 794
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+    pagebreak: { mode: ['css', 'legacy'], after: '.pdf-page' }
   };
 
   try {
