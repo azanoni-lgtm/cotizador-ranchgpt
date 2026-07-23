@@ -2136,6 +2136,7 @@ btnClosePdfModal.addEventListener('click', closePdfModal);
 btnCancelPdf.addEventListener('click', closePdfModal);
 
 btnPrintPdf.addEventListener('click', () => {
+  pdfModal.close();
   const target = document.createElement('div');
   target.id = 'pdfExportTarget';
   target.style.position = 'absolute';
@@ -2153,6 +2154,7 @@ btnPrintPdf.addEventListener('click', () => {
     if (document.body.contains(target)) {
       document.body.removeChild(target);
     }
+    pdfModal.showModal();
   }, 1000);
 });
 
@@ -2162,7 +2164,10 @@ btnDownloadPdf.addEventListener('click', async () => {
   btnDownloadPdf.disabled = true;
   btnDownloadPdf.textContent = 'Generando PDF...';
 
-  // Create temporary visible capture target at (0,0) in document.body
+  // 1. Temporarily close dialog so Top-Layer API doesn't isolate DOM from html2canvas
+  pdfModal.close();
+
+  // 2. Create visible capture target in body flow
   const target = document.createElement('div');
   target.id = 'pdfExportTarget';
   target.style.position = 'absolute';
@@ -2174,7 +2179,7 @@ btnDownloadPdf.addEventListener('click', async () => {
   target.innerHTML = buildPdfHtml();
   document.body.appendChild(target);
 
-  // Wait 300ms for browser layout & font rendering
+  // 3. Wait 300ms for browser layout & font rendering outside top-layer dialog
   await new Promise(resolve => setTimeout(resolve, 300));
 
   const opt = {
@@ -2189,7 +2194,7 @@ btnDownloadPdf.addEventListener('click', async () => {
       scrollY: 0,
       x: 0,
       y: 0,
-      windowWidth: 794
+      width: 794
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
     pagebreak: { mode: ['css', 'legacy'], after: '.pdf-page' }
@@ -2202,13 +2207,14 @@ btnDownloadPdf.addEventListener('click', async () => {
       window.print();
     }
   } catch (err) {
-    console.error('Error al generar PDF:', err);
-    alert('No se pudo generar el archivo PDF automáticamente. Se abrirá la ventana de impresión para que puedas guardarlo como PDF.');
+    console.error('Error al generar PDF con html2pdf:', err);
     window.print();
   } finally {
     if (document.body.contains(target)) {
       document.body.removeChild(target);
     }
+    // 4. Re-open preview modal for user
+    pdfModal.showModal();
     btnDownloadPdf.disabled = false;
     btnDownloadPdf.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
