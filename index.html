@@ -927,8 +927,6 @@
             <option value="Ana Kaitazoff — Ing. Agr. Responsable Comercial" selected>Ana Kaitazoff — Ing. Agr. Responsable Comercial</option>
             <option value="Adrián Zanoni — Responsable del Proyecto RanchGPT">Adrián Zanoni — Responsable del Proyecto RanchGPT</option>
             <option value="María Eugenia Montans — Ing. Agr. Responsable de Operaciones">María Eugenia Montans — Ing. Agr. Responsable de Operaciones</option>
-            <option value="Rodrigo Bosch — Ing. Agr. Referente Argentina">Rodrigo Bosch — Ing. Agr. Referente Argentina</option>
-            <option value="Esteban Hoffman — Ing. Agr. Asesor Módulo Agrícola">Esteban Hoffman — Ing. Agr. Asesor Módulo Agrícola</option>
           </select>
         </div>
       </div>
@@ -1626,16 +1624,24 @@ function calc(){
 }
 
 // ================= Generador de Propuesta PDF =================
+const ASESOR_EMAILS = {
+  'Ana Kaitazoff — Ing. Agr. Responsable Comercial': 'ana.kaitazoff@ranchgpt.com',
+  'Adrián Zanoni — Responsable del Proyecto RanchGPT': 'adrian.zanoni@ranchgpt.com',
+  'María Eugenia Montans — Ing. Agr. Responsable de Operaciones': 'maria.montans@ranchgpt.com'
+};
+
 function buildPdfHtml() {
   const prodNombre = $('inProdNombre').value.trim() || 'Establecimiento Agropecuario';
   const prodContacto = $('inProdContacto').value.trim() || 'Dirección General';
   const prodUbicacion = $('inProdUbicacion').value.trim() || 'Uruguay / Argentina';
   const prodManejo = $('inProdManejo').value.trim() || 'Pastoreo Rotativo y Producción Mixta';
   const prodAsesor = $('inProdAsesor').value || 'Ana Kaitazoff — Ing. Agr. Responsable Comercial';
+  const prodAsesorEmail = ASESOR_EMAILS[prodAsesor] || 'contacto@ranchgpt.com';
 
   const estab = $('inEstab').value;
   const areaTotal = Math.round(+$('inArea').value||0).toLocaleString('es-UY');
   const cabezas = Math.round(+$('inCabezas').value||0).toLocaleString('es-UY');
+  const areaAgriVal = $('lblAreaAgri').textContent;
   const plan = $('planBadge').textContent;
   
   const setupVal = $('vSetup').textContent;
@@ -1675,7 +1681,8 @@ function buildPdfHtml() {
         <p>Atención: <strong>${prodContacto}</strong></p>
         <div class="pdf-cover-stats">
           <div class="pdf-stat-item"><span>Escala:</span> <strong>${areaTotal} ha</strong></div>
-          ${sistema !== 'agricola' ? `<div class="pdf-stat-item"><span>Ganado:</span> <strong>${cabezas} cabezas</strong></div>` : ''}
+          ${sistema !== 'agricola' ? `<div class="pdf-stat-item"><span>Ganado:</span> <strong>${cabezas} animales</strong></div>` : ''}
+          ${sistema !== 'ganadero' ? `<div class="pdf-stat-item"><span>Agricultura:</span> <strong>${areaAgriVal}</strong></div>` : ''}
           <div class="pdf-stat-item"><span>Manejo:</span> <strong>${prodManejo}</strong></div>
           <div class="pdf-stat-item"><span>Ubicación:</span> <strong>${prodUbicacion}</strong></div>
         </div>
@@ -1689,26 +1696,50 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 2: QUIÉNES SOMOS Y EL DESAFÍO -->
+  <!-- PÁGINA 2: QUIÉNES SOMOS -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 2 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 2 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">01. Introducción</span>
-      <h2 class="pdf-section-title">Quiénes somos y El Desafío de la Operación</h2>
-      
+      <span class="pdf-section-tag">01. Quiénes Somos</span>
+      <h2 class="pdf-section-title">RanchGPT — Transformación Digital Agropecuaria</h2>
+      <p class="pdf-intro-p" style="margin-bottom:14px;">
+        Somos la plataforma AgTech de referencia en transformación digital y operativa para empresas agropecuarias ganaderas, agrícolas y mixtas. Integramos gestión productiva, trazabilidad, información económica y sustentabilidad en una sola herramienta inteligente, respaldada por un equipo de ingenieros agrónomos que garantizan la adopción real de la tecnología en el trabajo diario.
+      </p>
+
       <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-bottom:14px;">
-        <h4 style="color:var(--petrol)">RanchGPT — Transformación Digital Agropecuaria</h4>
+        <h4 style="color:var(--petrol)">🎯 Qué hacemos</h4>
         <p style="color:var(--petrol-deep)">
-          Somos la plataforma AgTech de referencia en transformación digital y operativa para empresas agropecuarias ganaderas, agrícolas y mixtas. Integramos gestión productiva, trazabilidad, información económica y sustentabilidad en una sola herramienta inteligente, respaldada por un equipo de ingenieros agrónomos que garantizan la adopción real de la tecnología en el trabajo diario.
+          Reunimos en una sola plataforma la información productiva, económica, sanitaria y ambiental del establecimiento: ganadería con trazabilidad individual del nacimiento a la faena, corral, agricultura, pasturas, combustible, finanzas y reportes al día para la gerencia. Toda la operación centralizada, con una vista única y en línea del negocio.
         </p>
       </div>
 
-      <span class="pdf-section-tag">El Desafío</span>
-      <h3 style="font-size:13.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Cuando la empresa agropecuaria crece, la gestión requiere más control</h3>
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2;">
+        <h4 style="color:var(--petrol)">⚙️ Cómo lo hacemos</h4>
+        <p style="color:var(--petrol-deep)">
+          Combinamos tecnología accesible (Web, App Celular y WhatsApp, con funcionamiento sin señal en el campo), procesos claros para la carga y validación de datos en origen, y un equipo de RanchGPT que capacita y acompaña al personal en su propio lugar de trabajo para asegurar la adopción real en el trabajo diario.
+        </p>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 3: EL DESAFÍO -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 3 de 9</div>
+      </div>
+
+      <span class="pdf-section-tag">02. El Desafío</span>
+      <h2 class="pdf-section-title">Cuando la empresa agropecuaria crece, la gestión requiere más control</h2>
       <p class="pdf-intro-p" style="margin-bottom:12px;">
         Con <strong>${areaTotal} ha</strong> y una operación de sistema <strong>${sysStr}</strong> en <strong>${prodUbicacion}</strong>, la toma de decisiones exige certezas. A medida que la escala aumenta, consolidar datos dispersos se vuelve un cuello de botella que compromete la rentabilidad.
       </p>
@@ -1734,15 +1765,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 3: ¿QUÉ ES RANCHGPT? VISIÓN 360 -->
+  <!-- PÁGINA 4: ¿QUÉ ES RANCHGPT? VISIÓN 360 -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 3 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 4 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">02. La Solución</span>
+      <span class="pdf-section-tag">03. La Solución</span>
       <h2 class="pdf-section-title">¿Qué es RanchGPT? — Solución Integral 360°</h2>
       <p class="pdf-intro-p">
         RanchGPT reúne en un solo lugar la información productiva, económica, sanitaria y ambiental de su campo. Inteligencia artificial y procesos ordenados para transformar datos del campo en resultados de negocio.
@@ -1756,24 +1787,32 @@ function buildPdfHtml() {
         <div class="pdf-flow-step">3. De la Decisión a los Resultados</div>
       </div>
 
-      <h3 style="font-size:13px; font-weight:700; color:var(--petrol); margin-bottom:10px;">Módulos de Trabajo Integrados (360 Farming):</h3>
+      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Módulos de Trabajo Integrados:</h3>
 
       <div class="pdf-grid-3">
         <div class="pdf-card-box">
-          <h4>🌾 Agricultura</h4>
-          <p>Planificación de cultivos, potreros, labores agrícolas, rotaciones, insumos, cosecha y trazabilidad de campo.</p>
+          <h4>🐄 Ganadería</h4>
+          <p>Inventario, valorización, pesadas, sanidad, reproducción y recría con trazabilidad individual desde el nacimiento hasta la faena.</p>
         </div>
         <div class="pdf-card-box">
-          <h4>🐂 Ganadería</h4>
-          <p>Inventario de hacienda, pesadas, sanidad, reproducción, recría, terminación y feedlot con trazabilidad individual.</p>
+          <h4>🏭 Feedlot / Corral</h4>
+          <p>Gestión del corral de engorde: ingresos y egresos, seguimiento por corral, raciones, consumos y resultados de terminación.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>🌾 Agricultura</h4>
+          <p>Planificación de cultivos, potreros, labores agrícolas, rotaciones, insumos, cosecha y trazabilidad total.</p>
         </div>
         <div class="pdf-card-box">
           <h4>🌿 Pasturas</h4>
-          <p>Disponibilidad de forraje, carga animal por potrero, rotaciones y proyecciones de pastoreo.</p>
+          <p>Disponibilidad de forraje, carga animal por potrero, rotaciones y proyecciones de pastoreo para cría y recría.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>⛽ Combustible y Maquinaria</h4>
+          <p>Registro centralizado de consumo de combustible por máquina, labor y unidad productiva, con control de desvíos.</p>
         </div>
         <div class="pdf-card-box">
           <h4>💰 Finanzas y Stock</h4>
-          <p>Registro de compras, ventas, costos, ingresos, control de inventario y conciliación con sistemas contables.</p>
+          <p>Registro de compras, ventas, costos, ingresos, control de inventario y conciliación con su sistema contable.</p>
         </div>
         <div class="pdf-card-box">
           <h4>🟢 Sustentabilidad</h4>
@@ -1781,7 +1820,11 @@ function buildPdfHtml() {
         </div>
         <div class="pdf-card-box">
           <h4>📊 Reportes y BI</h4>
-          <p>Indicadores productivos, sanitarios y económicos al día para gerencia, administración y directorio.</p>
+          <p>Indicadores productivos, sanitarios y económicos al día para gerencia, administración y directorio, con fuerte foco visual.</p>
+        </div>
+        <div class="pdf-card-box">
+          <h4>🔗 Integraciones</h4>
+          <p>Convivencia con los sistemas existentes: su sistema propio de compra de ganado y su sistema contable, evitando doble digitación.</p>
         </div>
       </div>
     </div>
@@ -1791,15 +1834,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 4: PROPUESTA DE VALOR - 3 PILARES -->
+  <!-- PÁGINA 5: PROPUESTA DE VALOR - 3 PILARES -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 4 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 5 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">03. Metodología</span>
+      <span class="pdf-section-tag">04. Metodología</span>
       <h2 class="pdf-section-title">Nuestra Propuesta de Valor — Los 3 Pilares</h2>
       <p class="pdf-intro-p">
         <strong>No es solo tecnología. Es transformación operativa con adopción real.</strong><br>
@@ -1837,10 +1880,10 @@ function buildPdfHtml() {
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 5 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 6 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">04. Plan de Trabajo</span>
+      <span class="pdf-section-tag">05. Plan de Trabajo</span>
       <h2 class="pdf-section-title">Proyecto de Implementación "Llave en Mano"</h2>
       <p class="pdf-intro-p">
         Un proceso estructurado de <strong>12 semanas</strong> para transformar la gestión operativa de su campo con el acompañamiento de nuestro equipo.
@@ -1901,10 +1944,10 @@ function buildPdfHtml() {
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 6 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 7 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">05. Asegurar la Calidad</span>
+      <span class="pdf-section-tag">06. Asegurar la Calidad</span>
       <h2 class="pdf-section-title">Calidad de Datos y Empoderamiento Técnico</h2>
       <p class="pdf-intro-p" style="margin-bottom:12px;">
         Funcionamos como su <strong>Oficina de Datos Externa</strong>. Revisamos la carga de información, auditamos consistencias y respaldamos el trabajo de sus asesores.
@@ -1972,22 +2015,22 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 7: INVERSIÓN PERSONALIZADA -->
+  <!-- PÁGINA 8: INVERSIÓN PERSONALIZADA -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 7 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 8 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">06. Propuesta Económica</span>
+      <span class="pdf-section-tag">07. Propuesta Económica</span>
       <h2 class="pdf-section-title">Inversión Personalizada</h2>
-      <p class="pdf-intro-p" style="margin-bottom:12px;">
+      <p class="pdf-intro-p" style="margin-bottom:10px;">
         Dimensionamiento para <strong>${areaTotal} ha</strong> (${sistema !== 'agricola' ? cabezas + ' cabezas' : 'área agrícola'}) en <strong>${estab} establecimiento(s)</strong>.
       </p>
 
-      <div class="pdf-card-box" style="background:var(--petrol); color:#fff; padding:18px; margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:8px;">
+      <div class="pdf-card-box" style="background:var(--petrol); color:#fff; padding:16px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:8px;">
           <div>
             <span style="font-size:10px; color:var(--mint); font-weight:700; text-transform:uppercase;">Plan Asignado</span>
             <h3 style="font-size:20px; color:#fff; font-weight:800;">${plan}</h3>
@@ -1998,10 +2041,10 @@ function buildPdfHtml() {
           </div>
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+        <div style="display:flex; flex-direction:column; gap:5px; font-size:12px;">
           <div style="display:flex; justify-content:space-between;"><span>Setup e Implementación Llave en Mano (Año 1):</span><strong>${setupVal}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Suscripción Año 1 (${comap ? 'COMAP' : 'Bonificada'}):</span><strong>${subAno1Val}</strong></div>
-          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid rgba(255,255,255,0.15); font-size:14px; font-weight:700;">
+          <div style="display:flex; justify-content:space-between; padding-top:5px; border-top:1px solid rgba(255,255,255,0.15); font-size:14px; font-weight:700;">
             <span>Total Inversión Año 1:</span><span style="color:var(--mint); font-size:16px;">${totalAno1Val}</span>
           </div>
           <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:11.5px; color:#C6D4D9;">
@@ -2010,16 +2053,25 @@ function buildPdfHtml() {
         </div>
       </div>
 
-      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Su inversión incluye de forma integral:</h3>
+      <h3 style="font-size:12px; font-weight:700; color:var(--petrol); margin-bottom:6px;">Su inversión incluye de forma integral:</h3>
       <div class="pdf-grid-2">
         <div class="pdf-card-box">✓ Plataforma SaaS RanchGPT (Web, Móvil y WhatsApp conversacional)</div>
         <div class="pdf-card-box">✓ Proyecto de implementación llave en mano de 12 semanas</div>
         <div class="pdf-card-box">✓ Líder técnico agrónomo dedicado a su cuenta</div>
         <div class="pdf-card-box">✓ Auditoría semanal de datos y conciliación con DICOSE / SNIG</div>
         <div class="pdf-card-box">✓ Tableros de Inteligencia de Negocios (BI) para la gerencia</div>
+        <div class="pdf-card-box">✓ Módulo de combustible y centralización de costos operativos</div>
+        <div class="pdf-card-box">✓ Conciliación con su sistema contable</div>
         <div class="pdf-card-box">✓ Módulo de Huella de Carbono y trazabilidad exportable</div>
         <div class="pdf-card-box">✓ Capacitación presencial al personal y soporte continuo</div>
         <div class="pdf-card-box">✓ Actualizaciones continuas del sistema e inteligencia artificial</div>
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--amber-soft); border-color:#F0D9A8; margin-top:10px;">
+        <h4 style="font-size:11px; color:#8A6420;">💡 Beneficios Fiscales — Proyecto de Inversión (COMAP)</h4>
+        <p style="font-size:10px; color:#8A6420;">
+          Esta inversión puede optimizarse financieramente a través del régimen de promoción de inversiones vigente en Uruguay: el licenciamiento de software computa como inversión en activo intangible, los servicios de implementación y capacitación son gastos computables de la puesta en marcha tecnológica, y el módulo de Huella de Carbono posiciona favorablemente ante el indicador de Tecnologías Limpias. Sugerimos evaluar con su asesor contable la incorporación de esta inversión a un proyecto COMAP (nuevo o como ampliación de uno vigente) para recuperar un porcentaje significativo mediante exoneraciones de IRAE.
+        </p>
       </div>
     </div>
     <div class="pdf-footer">
@@ -2028,15 +2080,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 8: PRÓXIMOS PASOS Y CONTACTO -->
+  <!-- PÁGINA 9: PRÓXIMOS PASOS Y CONTACTO -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 8 de 8</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 9 de 9</div>
       </div>
 
-      <span class="pdf-section-tag">07. Siguientes Pasos</span>
+      <span class="pdf-section-tag">08. Siguientes Pasos</span>
       <h2 class="pdf-section-title">Próximos Pasos para Iniciar</h2>
       <p class="pdf-intro-p" style="margin-bottom:12px;">
         Acompañamos a su empresa agropecuaria a dar el salto de profesionalización en la gestión de su campo.
@@ -2077,8 +2129,7 @@ function buildPdfHtml() {
       </div>
 
       <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; text-align:center; padding:16px; margin-bottom:16px;">
-        <h3 style="font-size:14.5px; color:var(--petrol); font-weight:800; margin-bottom:4px;">"Transformamos los datos de su campo en mejores decisiones para su negocio."</h3>
-        <p style="font-size:11px; color:var(--petrol-deep);">No vendemos software. Ejecutamos transformación digital con certeza de resultados.</p>
+        <h3 style="font-size:14.5px; color:var(--petrol); font-weight:800;">"No vendemos software. Ejecutamos transformación digital con certeza de resultados."</h3>
       </div>
 
       <div class="pdf-card-box" style="background:var(--bg); border-color:var(--line); padding:14px;">
@@ -2086,7 +2137,7 @@ function buildPdfHtml() {
         <div style="font-size:14px; font-weight:700; color:var(--petrol); margin-top:2px;">${prodAsesor}</div>
         <div style="font-size:11px; color:var(--muted); margin-top:4px;">
           RanchGPT · Nomer Company S.A.<br>
-          Email: contacto@ranchgpt.com | Sitio Web: www.ranchgpt.com<br>
+          Email: ${prodAsesorEmail} | Sitio Web: www.ranchgpt.com<br>
           <span style="font-size:10px; opacity:0.8;">Validez de la propuesta: 30 días a partir de su emisión.</span>
         </div>
       </div>
