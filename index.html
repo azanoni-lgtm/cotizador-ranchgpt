@@ -1207,9 +1207,9 @@ const CULTIVOS = {
   otro:    {label:'Otro cultivo', v:150}
 };
 let TIERS_GAN = [
-  {hasta:3000,  precio:3.00},
+  {hasta:2500,  precio:3.00},
   {hasta:6000,  precio:2.20},
-  {hasta:10000, precio:1.50},
+  {hasta:15000, precio:1.50},
   {hasta:Infinity, precio:1.00}
 ];
 let TIERS_AGRI = [
@@ -1492,17 +1492,18 @@ $('togglePassword').addEventListener('click', () => {
 
 // ================= Motor de cálculo =================
 function tieredPrice(qty, tiers){
-  let total=0, prev=0, detalle=[];
+  if(!qty || qty <= 0) return {total:0, detalle:[], unitPrice:0};
+  
+  let selectedPrice = tiers[tiers.length - 1].precio;
   for(const t of tiers){
-    if(qty<=prev) break;
-    const enTramo = Math.min(qty, t.hasta) - prev;
-    if(enTramo>0){
-      total += enTramo * t.precio;
-      detalle.push({unidades:enTramo, precio:t.precio});
+    if(qty <= t.hasta){
+      selectedPrice = t.precio;
+      break;
     }
-    prev = t.hasta;
   }
-  return {total, detalle};
+  const total = qty * selectedPrice;
+  const detalle = [{unidades: qty, precio: selectedPrice}];
+  return {total, detalle, unitPrice: selectedPrice};
 }
 
 function readTiers(tableId, tiers){
@@ -1541,7 +1542,7 @@ function calc(){
   const rentaGan = (sistema!=='agricola') ? cabezas * MARGENES_GAN[tipoGan].v : 0;
   const rentaNeta = rentaGan + rentaAgri;
 
-  // Suscripción escalonada
+  // Suscripción por volumen total
   const subGan = (sistema!=='agricola') ? tieredPrice(cabezas, TIERS_GAN) : {total:0,detalle:[]};
   const subAgri = (sistema!=='ganadero') ? tieredPrice(areaAgri, TIERS_AGRI) : {total:0,detalle:[]};
   let subCalculada = subGan.total + subAgri.total;
@@ -1603,10 +1604,10 @@ function calc(){
   gf.className = 'gauge-fill' + (pctGauge>=99.5 ? (floorApplied&&subMin>tope?' over':' warn') : '');
   $('gaugeNote').textContent = `Renta neta estimada: ${fmt(rentaNeta)} · Tope ${(topePct*100).toFixed(1)}%: ${fmt(tope)}`;
 
-  // Desglose por tramos
+  // Desglose por volumen
   let bd='';
-  if(subGan.detalle.length) bd += subGan.detalle.map(d=>`<div><span>Ganadería · ${d.unidades.toLocaleString('es-UY')} cab × ${d.precio.toFixed(2)}</span><span class="bd-v">${fmt(d.unidades*d.precio)}</span></div>`).join('');
-  if(subAgri.detalle.length) bd += subAgri.detalle.map(d=>`<div><span>Agricultura · ${d.unidades.toLocaleString('es-UY')} ha × ${d.precio.toFixed(2)}</span><span class="bd-v">${fmt(d.unidades*d.precio)}</span></div>`).join('');
+  if(subGan.detalle.length) bd += subGan.detalle.map(d=>`<div><span>Ganadería · ${d.unidades.toLocaleString('es-UY')} cab × ${d.precio.toFixed(2)} USD/cab</span><span class="bd-v">${fmt(d.unidades*d.precio)}</span></div>`).join('');
+  if(subAgri.detalle.length) bd += subAgri.detalle.map(d=>`<div><span>Agricultura · ${d.unidades.toLocaleString('es-UY')} ha × ${d.precio.toFixed(2)} USD/ha</span><span class="bd-v">${fmt(d.unidades*d.precio)}</span></div>`).join('');
   if(capApplied) bd += `<div><span>Ajuste por tope de renta (${(topePct*100).toFixed(1)}%)</span><span class="bd-v">−${fmt(subCalculada-tope)}</span></div>`;
   if(floorApplied) bd += `<div><span>Piso de suscripción aplicado</span><span class="bd-v">${fmt(subMin)}</span></div>`;
   $('breakdown').innerHTML = bd;
@@ -1620,7 +1621,7 @@ function calc(){
     danger.textContent = `La suscripción mínima (${fmt(subMin)}) supera el tope del ${(topePct*100).toFixed(1)}% de la renta estimada (${fmt(tope)}). El cliente está por debajo del umbral de viabilidad de renovación.`;
   } else if(capApplied){
     warn.style.display='block';
-    warn.textContent = `El precio escalonado (${fmt(subCalculada)}) superaba el tope de renta y fue ajustado al ${(topePct*100).toFixed(1)}% (${fmt(tope)}).`;
+    warn.textContent = `El precio calculado por volumen (${fmt(subCalculada)}) superaba el tope de renta y fue ajustado al ${(topePct*100).toFixed(1)}% (${fmt(tope)}).`;
   }
 }
 
