@@ -39,10 +39,11 @@
   .card .hint{font-size:12px;color:var(--muted);margin-bottom:18px}
 
   label{display:block;font-size:12px;font-weight:600;color:var(--petrol);margin-bottom:6px}
-  input[type=number],input[type=text],input[type=password],input[type=email],input[type=tel],select{
+  input[type=number],input[type=text],input[type=password],input[type=email],input[type=tel],select,textarea{
     width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff;transition:border-color .15s
   }
-  input[type=number]:focus,input[type=text]:focus,input[type=password]:focus,input[type=email]:focus,input[type=tel]:focus,select:focus{
+  textarea{resize:vertical}
+  input[type=number]:focus,input[type=text]:focus,input[type=password]:focus,input[type=email]:focus,input[type=tel]:focus,select:focus,textarea:focus{
     outline:none;border-color:var(--mint)
   }
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -911,15 +912,23 @@
             <input type="text" id="inProdManejo" value="Pastoreo Rotativo Voisin y Recría" placeholder="Ej: Ciclo Completo / Feedlot / Agricultura">
           </div>
         </div>
-        <div class="field">
-          <label>Desafíos prioritarios a resolver en el campo:</label>
-          <div class="checkbox-group">
-            <label class="checkbox-item"><input type="checkbox" id="chkDesafio1" checked> Información dispersa en planillas de Excel, cuadernos y mensajes de WhatsApp</label>
-            <label class="checkbox-item"><input type="checkbox" id="chkDesafio2" checked> Falta de reportes e información al día para tomar decisiones estratégicas a tiempo</label>
-            <label class="checkbox-item"><input type="checkbox" id="chkDesafio3" checked> Procesos de trabajo no estandarizados entre los establecimientos y el equipo</label>
-            <label class="checkbox-item"><input type="checkbox" id="chkDesafio4" checked> Exigencias crecientes de trazabilidad oficial (SNIG / DICOSE / Guías) y certificaciones</label>
-            <label class="checkbox-item"><input type="checkbox" id="chkDesafio5"> Medición de huella de carbono y atributos diferenciales para mercados de valor</label>
+        <div class="grid2">
+          <div class="field">
+            <label for="inPais">País (trazabilidad oficial y beneficios fiscales)</label>
+            <select id="inPais">
+              <option value="UY" selected>Uruguay</option>
+              <option value="PY">Paraguay</option>
+              <option value="AR">Argentina</option>
+            </select>
           </div>
+          <div class="field">
+            <label for="inHoras">Horas de personalización incluidas (anual)</label>
+            <input type="text" id="inHoras" value="20 horas anuales" placeholder="Ej: 20 horas anuales">
+          </div>
+        </div>
+        <div class="field">
+          <label for="inContexto">Contexto detectado en el relevamiento (1-2 frases, para la página "El Desafío")</label>
+          <textarea id="inContexto" rows="2" placeholder="Lo detectado en la reunión con el cliente">En la reunión de relevamiento se identificó información dispersa entre planillas, cuadernos de campo y el sistema contable, con reportes que llegan a la dirección con demora y sin trazabilidad del dato de origen.</textarea>
         </div>
         <div class="field">
           <label for="inProdAsesor">Asesor Comercial Emisor (RanchGPT)</label>
@@ -1219,6 +1228,7 @@ let TIERS_AGRI = [
 
 let sistema = 'ganadero';
 let comap = false;
+let rentaGanG = 0, rentaAgriG = 0;
 
 // ================= UI dinámica =================
 const $ = id => document.getElementById(id);
@@ -1298,13 +1308,9 @@ function saveState() {
       contacto: $('inProdContacto').value,
       ubicacion: $('inProdUbicacion').value,
       manejo: $('inProdManejo').value,
-      desafios: {
-        d1: $('chkDesafio1').checked,
-        d2: $('chkDesafio2').checked,
-        d3: $('chkDesafio3').checked,
-        d4: $('chkDesafio4').checked,
-        d5: $('chkDesafio5').checked
-      },
+      pais: $('inPais').value,
+      horas: $('inHoras').value,
+      contexto: $('inContexto').value,
       asesor: $('inProdAsesor').value
     },
     inputs: {
@@ -1383,14 +1389,10 @@ function loadState() {
       if (state.producer.contacto !== undefined) $('inProdContacto').value = state.producer.contacto;
       if (state.producer.ubicacion !== undefined) $('inProdUbicacion').value = state.producer.ubicacion;
       if (state.producer.manejo !== undefined) $('inProdManejo').value = state.producer.manejo;
+      if (state.producer.pais !== undefined) $('inPais').value = state.producer.pais;
+      if (state.producer.horas !== undefined) $('inHoras').value = state.producer.horas;
+      if (state.producer.contexto !== undefined) $('inContexto').value = state.producer.contexto;
       if (state.producer.asesor !== undefined) $('inProdAsesor').value = state.producer.asesor;
-      if (state.producer.desafios) {
-        if (state.producer.desafios.d1 !== undefined) $('chkDesafio1').checked = state.producer.desafios.d1;
-        if (state.producer.desafios.d2 !== undefined) $('chkDesafio2').checked = state.producer.desafios.d2;
-        if (state.producer.desafios.d3 !== undefined) $('chkDesafio3').checked = state.producer.desafios.d3;
-        if (state.producer.desafios.d4 !== undefined) $('chkDesafio4').checked = state.producer.desafios.d4;
-        if (state.producer.desafios.d5 !== undefined) $('chkDesafio5').checked = state.producer.desafios.d5;
-      }
     }
 
     // inputs
@@ -1539,6 +1541,7 @@ function calc(){
   // Renta neta estimada
   const rentaGan = (sistema!=='agricola') ? cabezas * MARGENES_GAN[tipoGan].v : 0;
   const rentaNeta = rentaGan + rentaAgri;
+  rentaGanG = rentaGan; rentaAgriG = rentaAgri;
 
   // Suscripción por volumen total
   const subGan = (sistema!=='agricola') ? tieredPrice(cabezas, TIERS_GAN) : {total:0,detalle:[]};
@@ -1630,6 +1633,157 @@ const ASESOR_EMAILS = {
   'María Eugenia Montans — Ing. Agr. Responsable de Operaciones': 'maria.montans@ranchgpt.com'
 };
 
+// ---- Contenido por país: trazabilidad oficial y beneficios fiscales ----
+const PAISES = {
+  UY: {
+    traza: 'DICOSE / SNIG',
+    traza_largo: 'el Sistema Nacional de Información Ganadera (SNIG) y la declaración jurada DICOSE',
+    fiscal_titulo: 'Beneficios Fiscales — Proyecto de Inversión (COMAP)',
+    fiscal_texto: 'Esta inversión puede optimizarse a través del régimen de promoción de inversiones vigente en Uruguay: el licenciamiento de software computa como inversión en activo intangible, los servicios de implementación y capacitación son gastos computables de la puesta en marcha tecnológica, y el módulo de Huella de Carbono posiciona favorablemente ante el indicador de Tecnologías Limpias. Sugerimos evaluar con su asesor contable la incorporación de esta inversión a un proyecto COMAP (nuevo o como ampliación de uno vigente) para recuperar un porcentaje significativo mediante exoneraciones de IRAE.'
+  },
+  PY: {
+    traza: 'SENACSA / SIGOR',
+    traza_largo: 'los registros de SENACSA y el sistema SIGOR de guías de traslado',
+    fiscal_titulo: 'Beneficios Fiscales — Inversión en tecnología',
+    fiscal_texto: 'Sugerimos evaluar con su asesor contable el tratamiento de esta inversión bajo los regímenes de incentivo vigentes en Paraguay, considerando el licenciamiento de software como activo intangible y los servicios de implementación y capacitación como gastos de puesta en marcha tecnológica. [Validar alcance y régimen aplicable con asesor local antes de enviar la propuesta.]'
+  },
+  AR: {
+    traza: 'SENASA / SIGSA',
+    traza_largo: 'los registros de SENASA y el sistema de gestión sanitaria SIGSA',
+    fiscal_titulo: 'Tratamiento fiscal de la inversión',
+    fiscal_texto: 'Sugerimos evaluar con su asesor contable el tratamiento de esta inversión, considerando el licenciamiento de software como activo intangible y los servicios de implementación y capacitación como gastos de puesta en marcha tecnológica. [Validar régimen aplicable con asesor local antes de enviar la propuesta.]'
+  }
+};
+function sustituir(t, P) {
+  return t.replace(/\{traza_largo\}/g, P.traza_largo).replace(/\{traza\}/g, P.traza);
+}
+
+// ---- Encuadre de portada y desafío, por perfil productivo ----
+const ENCUADRE = {
+  ganadero: {
+    tituloPortada: 'Transformación digital para<br>el negocio ganadero',
+    subtitulo: 'Trazabilidad individual, control sanitario y gestión del rodeo en una sola plataforma',
+    sistemaLabel: 'Ganadero',
+    desafioIntro: 'A medida que crece el rodeo, la superficie y la cantidad de personas que registran información, la dirección necesita saber con certeza cuántos animales hay, dónde están, en qué estado sanitario se encuentran y cuántos kilos se están produciendo por hectárea.'
+  },
+  agricola: {
+    tituloPortada: 'Transformación digital para<br>el negocio agrícola',
+    subtitulo: 'Plan de siembra, labores, cosecha y márgenes por chacra en una sola plataforma',
+    sistemaLabel: 'Agrícola',
+    desafioIntro: 'A medida que crecen la superficie, la cantidad de chacras y la dispersión geográfica, la dirección necesita saber con certeza qué se hizo en cada lote, con qué insumos, a qué costo y con qué resultado por hectárea.'
+  },
+  mixto_ganadero: {
+    tituloPortada: 'Transformación digital para<br>impulsar la gestión de su campo',
+    subtitulo: 'Ganadería, agricultura y control económico integrados en una sola plataforma',
+    sistemaLabel: 'Mixto — predominancia ganadera',
+    desafioIntro: 'En un sistema mixto, la información ganadera y la agrícola suelen vivir en planillas distintas, con criterios distintos. La dirección termina reconstruyendo manualmente un resultado que debería estar disponible en línea, con la ganadería y la agricultura compitiendo por los mismos recursos sin una vista comparable.'
+  },
+  mixto_agricola: {
+    tituloPortada: 'Transformación digital para<br>impulsar la gestión de su campo',
+    subtitulo: 'Agricultura, ganadería y control económico integrados en una sola plataforma',
+    sistemaLabel: 'Mixto — predominancia agrícola',
+    desafioIntro: 'En un sistema mixto, la información agrícola y la ganadera suelen vivir en planillas distintas, con criterios distintos. La dirección termina reconstruyendo manualmente un resultado que debería estar disponible en línea, con la agricultura y la ganadería compitiendo por los mismos recursos sin una vista comparable.'
+  }
+};
+
+// ---- Tarjetas de "El Desafío", por perfil (mixto_ganadero y mixto_agricola comparten set) ----
+const DESAFIO = {
+  ganadero: [
+    ['DATO', 'Stock que no cierra', 'El inventario real difiere del declarado. Nacimientos, muertes, traslados y ventas se registran en cuadernos o planillas y se consolidan tarde.'],
+    ['SANIDAD', 'Trazabilidad sanitaria frágil', 'Los tratamientos quedan en la memoria del encargado. Los tiempos de espera se controlan de forma manual, con riesgo en el embarque a faena.'],
+    ['DECISIÓN', 'Kilos que no se miden', 'Sin pesadas sistematizadas no hay ganancia diaria confiable, ni proyección de fecha de venta, ni comparación entre lotes o potreros.'],
+    ['MERCADO', 'Exigencias crecientes', 'Trazabilidad oficial, certificaciones y mercados premium demandan respaldo documental que la operación tradicional no puede sostener.']
+  ],
+  agricola: [
+    ['DATO', 'Registros dispersos por lote', 'Labores, aplicaciones e insumos se anotan en planillas, WhatsApp y cuadernos. Reconstruir la historia de una chacra lleva días.'],
+    ['APLICACIONES', 'Trazabilidad de aplicación incompleta', 'Producto, dosis, fecha, responsable y condiciones no siempre quedan documentados con el respaldo que exige la industria.'],
+    ['DECISIÓN', 'Márgenes sin comparabilidad', 'Los costos no se imputan por lote y cultivo, por lo que no hay margen bruto comparable entre chacras ni entre campañas.'],
+    ['LOGÍSTICA', 'Entregas sin seguimiento', 'Cosecha, remitos y liquidaciones se siguen por fuera del sistema, con diferencias que aparecen semanas después.']
+  ],
+  mixto: [
+    ['DATO', 'Información fragmentada', 'Ganadería y agricultura se registran con criterios distintos, en planillas distintas. Consolidar el resultado del campo es un trabajo manual.'],
+    ['DECISIÓN', 'Reportes que llegan tarde', 'Los indicadores productivos, económicos y ambientales llegan a la dirección con demora, fragmentados o sin contexto.'],
+    ['OPERACIÓN', 'Procesos no estandarizados', 'Cada establecimiento y cada encargado opera con criterios propios, lo que erosiona la comparabilidad y debilita el control consolidado.'],
+    ['MERCADO', 'Exigencias crecientes', 'Trazabilidad oficial, certificaciones y mercados premium demandan respaldo documental que la operación tradicional no puede sostener.']
+  ]
+};
+
+// ---- Módulos y su orden de prioridad, por perfil ----
+const MODULOS = {
+  ganaderia:     ['🐄 Ganadería', 'Inventario, valorización, pesadas, sanidad, reproducción, recría e invernada con trazabilidad individual del nacimiento a la faena.'],
+  agricultura:   ['🌾 Agricultura', 'Plan de siembra, chacras, labores y aplicaciones, insumos, tareas, cosecha, remitos digitales y trazabilidad total.'],
+  feedlot:       ['🏭 Feedlot / Corral', 'Gestión del corral de engorde: ingresos y egresos, seguimiento por corral, raciones, consumos y resultados de terminación.'],
+  pasturas:      ['🌿 Pasturas y forraje', 'Disponibilidad de forraje, carga animal por potrero, rotaciones y proyecciones de pastoreo.'],
+  combustible:   ['⛽ Combustible y maquinaria', 'Consumo de combustible por máquina, labor y unidad productiva, con control de desvíos.'],
+  finanzas:      ['💰 Finanzas y stock', 'Compras, ventas, costos, ingresos, inventario e integración con el sistema contable.'],
+  sustentab:     ['🟢 Sustentabilidad', 'Huella de carbono equivalente y atributos diferenciales para acceder a mercados de mayor valor (preparado para verificación ISO 14064).'],
+  reportes:      ['📊 Reportes y BI', 'Indicadores productivos, sanitarios, económicos y ambientales al día para operación, gerencia y directorio.'],
+  integraciones: ['🔗 Integraciones', 'Convivencia con los sistemas existentes —contable, compra de ganado, acopio— evitando la doble digitación.']
+};
+const ORDEN_MODULOS = {
+  ganadero:       ['ganaderia','pasturas','feedlot','agricultura','finanzas','reportes','combustible','sustentab','integraciones'],
+  agricola:       ['agricultura','finanzas','reportes','ganaderia','pasturas','combustible','sustentab','integraciones'],
+  mixto_ganadero: ['ganaderia','agricultura','pasturas','feedlot','finanzas','reportes','combustible','sustentab','integraciones'],
+  mixto_agricola: ['agricultura','ganaderia','pasturas','finanzas','reportes','combustible','sustentab','integraciones']
+};
+
+// ---- Páginas de profundidad: ganadería y agricultura, versión detalle y alto nivel ----
+const GANADERIA_DETALLE = {
+  kicker: 'Operación Ganadera',
+  titulo: 'Gestión ganadera con trazabilidad individual',
+  intro: 'Cada animal tiene una historia completa y auditable en RanchGPT: de dónde vino, por dónde pasó, qué recibió, cuánto pesó y hacia dónde va. Sobre esa base se construyen los indicadores de gestión del rodeo.',
+  cards: [
+    ['Trazabilidad individual', 'Historia completa por caravana desde el nacimiento hasta la faena: origen, madre, categoría, pesadas, eventos sanitarios, movimientos y destino final. Conciliación con {traza}.'],
+    ['Movimiento de hacienda', 'Altas y bajas, traslados entre potreros y establecimientos, compras y ventas con guías asociadas. El stock por categoría queda conciliado en línea y contrastado contra la existencia física.'],
+    ['Plan sanitario y tiempos de espera', 'Protocolos por categoría con calendario de aplicación, registro individual o por lote, y control automático del período de retiro de cada producto, con alertas antes del embarque a faena.'],
+    ['Cría', 'Servicio, diagnóstico de gestación, parición y destete registrados a nivel individual. Índices de preñez, parición, destete y mortandad por rodeo, por potrero y por entore.'],
+    ['Recría e invernada', 'Pesadas sistematizadas, curva de evolución y ganancia diaria por lote. Proyección de fecha de venta y peso objetivo para planificar el embarque con anticipación.'],
+    ['Feedlot y terminación', 'Ingresos y egresos por corral, raciones y consumos, conversión y resultado de terminación por tropa.']
+  ],
+  kpis: ['Stock por categoría', 'Kg producidos / ha', 'Ganancia diaria por lote', 'Preñez · Parición · Destete', 'Mortandad', 'Conciliación {traza}']
+};
+const GANADERIA_ALTONIVEL = {
+  kicker: 'Ganadería Complementaria',
+  titulo: 'La ganadería del sistema, en el mismo lugar',
+  intro: 'El componente ganadero se gestiona sobre el mismo mapa y el mismo sistema de costos que la agricultura, sin herramientas paralelas.',
+  cards: [
+    ['Stock y movimientos', 'Inventario por categoría, altas y bajas, traslados, compras y ventas con conciliación contra {traza}.'],
+    ['Verdeos y pastoreo', 'Los verdeos y cultivos con destino pastoreo se planifican como labor agrícola y se consumen como recurso forrajero, sin doble carga.'],
+    ['Trazabilidad individual disponible', 'El módulo de trazabilidad animal completo, con sanidad y tiempos de espera, está disponible para activar cuando la escala del rodeo lo justifique.']
+  ]
+};
+const AGRICULTURA_DETALLE = {
+  kicker: 'Operación Agrícola',
+  titulo: 'Gestión agrícola por chacra, de la siembra a la entrega',
+  intro: 'Cada lote tiene una historia completa de campaña: qué se planificó, qué se ejecutó, con qué insumos y a qué costo. Sobre esa base se construye el margen comparable entre chacras.',
+  cards: [
+    ['Plan de siembra y campaña', 'Planificación por campaña, cultivo y chacra: superficie, fecha objetivo, rotación, densidad y necesidad de insumos. El plan queda como línea base contra la cual se mide la ejecución.'],
+    ['Labores y aplicaciones', 'Laboreo, siembra, fertilización y pulverizaciones con producto, dosis, fecha, responsable y maquinaria. Trazabilidad completa de aplicación con el respaldo documental que exige la industria.'],
+    ['Tareas y coordinación', 'Asignación de trabajo a operarios y contratistas, seguimiento del avance y registro desde el propio lote a través de la app, con o sin señal.'],
+    ['Insumos y stock', 'Recepción, consumo por labor y por lote, y existencias por depósito. Cada aplicación descuenta stock y se imputa al costo de la chacra.'],
+    ['Cosecha y remitos digitales', 'Registro de cosecha por lote con rendimiento, humedad y destino. Remitos digitales y seguimiento de entregas a acopio o industria, conciliados contra la liquidación.'],
+    ['Margen por chacra', 'Costos directos imputados por lote y cultivo contra el ingreso por entrega, para obtener margen bruto comparable entre chacras y entre campañas.']
+  ],
+  kpis: ['Avance de siembra', 'Costo directo / ha', 'Rendimiento por lote', 'Margen bruto por chacra', 'Consumo de insumos', 'Entregas conciliadas']
+};
+const AGRICULTURA_ALTONIVEL = {
+  kicker: 'Agricultura y Pasturas',
+  titulo: 'El componente agrícola de la operación ganadera',
+  intro: 'Toda operación ganadera tiene un componente agrícola: pasturas, verdeos y cultivos forrajeros que se siembran, se fertilizan, se aplican y tienen un costo que debe imputarse al kilo producido. RanchGPT lo gestiona con las mismas herramientas.',
+  cards: [
+    ['Pasturas y verdeos', 'Implantación, laboreo, siembra, fertilización y aplicaciones sobre cada potrero, con el histórico de la chacra disponible para decidir rotaciones.'],
+    ['Cadena forrajera', 'Disponibilidad de forraje, carga animal por potrero, rotaciones y proyección de pastoreo para cría, recría e invernada.'],
+    ['Costo del forraje', 'El costo de implantación y mantenimiento se imputa a la unidad ganadera, de modo que el kilo producido incorpora el costo real del recurso forrajero.'],
+    ['Agricultura de renta', 'Si el sistema incorpora superficie agrícola de renta, el módulo agrícola completo —plan de siembra, labores, cosecha, remitos y márgenes por chacra— está disponible sin costo adicional de licencia.']
+  ]
+};
+const SECUENCIA = {
+  ganadero:       [['ganaderia','detalle'], ['agricultura','alto']],
+  agricola:       [['agricultura','detalle'], ['ganaderia','alto']],
+  mixto_ganadero: [['ganaderia','detalle'], ['agricultura','detalle']],
+  mixto_agricola: [['agricultura','detalle'], ['ganaderia','detalle']]
+};
+
 function buildPdfHtml() {
   const prodNombre = $('inProdNombre').value.trim() || 'Establecimiento Agropecuario';
   const prodContacto = $('inProdContacto').value.trim() || 'Dirección General';
@@ -1637,33 +1791,57 @@ function buildPdfHtml() {
   const prodManejo = $('inProdManejo').value.trim() || 'Pastoreo Rotativo y Producción Mixta';
   const prodAsesor = $('inProdAsesor').value || 'Ana Kaitazoff — Ing. Agr. Responsable Comercial';
   const prodAsesorEmail = ASESOR_EMAILS[prodAsesor] || 'contacto@ranchgpt.com';
+  const prodContexto = $('inContexto').value.trim() || 'En la reunión de relevamiento se identificó información dispersa entre planillas, cuadernos de campo y el sistema contable, con reportes que llegan a la dirección con demora.';
+  const horas = $('inHoras').value.trim() || '20 horas anuales';
+  const P = PAISES[$('inPais').value] || PAISES.UY;
 
   const estab = $('inEstab').value;
   const areaTotal = Math.round(+$('inArea').value||0).toLocaleString('es-UY');
   const cabezas = Math.round(+$('inCabezas').value||0).toLocaleString('es-UY');
   const areaAgriVal = $('lblAreaAgri').textContent;
   const plan = $('planBadge').textContent;
-  
+
   const setupVal = $('vSetup').textContent;
   const subAno1Val = $('vSubAno1').textContent;
   const subListaVal = $('vSub').textContent;
   const subMensualVal = $('vMensual').textContent;
   const totalAno1Val = $('vAno1').textContent;
 
-  // Desafíos seleccionados
-  const desafios = [];
-  if ($('chkDesafio1').checked) desafios.push({ icon: '📦', title: 'Información dispersa', desc: 'Datos fragmentados en cuadernos, planillas Excel o mensajes de WhatsApp sin trazabilidad ni control.' });
-  if ($('chkDesafio2').checked) desafios.push({ icon: '📊', title: 'Decisiones sin datos al día', desc: 'Información y reportes de producción o costos que llegan tarde para hacer correcciones oportunas.' });
-  if ($('chkDesafio3').checked) desafios.push({ icon: '⚙️', title: 'Falta de procesos unificados', desc: 'Cada campo o encargado trabaja con criterios propios, perdiendo estandarización y comparabilidad.' });
-  if ($('chkDesafio4').checked) desafios.push({ icon: '📈', title: 'Exigencias de trazabilidad', desc: 'Requisitos crecientes de trazabilidad oficial (SNIG / DICOSE / Guías) y certificaciones que sobrepasan la gestión tradicional.' });
-  if ($('chkDesafio5').checked) desafios.push({ icon: '🟢', title: 'Medición de huella de carbono', desc: 'Necesidad de medir emisiones y atributos sustentables para acceder a mercados de mayor valor.' });
+  // Perfil productivo: ganadero / agricola / mixto con predominancia por renta estimada
+  const perfil = sistema === 'ganadero' ? 'ganadero'
+               : sistema === 'agricola' ? 'agricola'
+               : (rentaGanG >= rentaAgriG ? 'mixto_ganadero' : 'mixto_agricola');
+  const desafioKey = perfil.startsWith('mixto') ? 'mixto' : perfil;
+  const ENC = ENCUADRE[perfil];
 
-  if (desafios.length === 0) {
-    desafios.push({ icon: '📦', title: 'Información dispersa', desc: 'Datos fragmentados en cuadernos, planillas Excel o mensajes de WhatsApp sin trazabilidad ni control.' });
-    desafios.push({ icon: '📊', title: 'Decisiones sin datos al día', desc: 'Información y reportes de producción o costos que llegan tarde para hacer correcciones oportunas.' });
+  const modsHtml = ORDEN_MODULOS[perfil].map(k => {
+    const [t, d] = MODULOS[k];
+    return `<div class="pdf-card-box"><h4>${t}</h4><p>${d}</p></div>`;
+  }).join('');
+
+  const desafioCards = DESAFIO[desafioKey].map(([k,t,d]) => `
+    <div class="pdf-card-box">
+      <span style="font-size:9px; font-weight:800; color:var(--mint); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:2px;">${k}</span>
+      <h4>${t}</h4>
+      <p>${d}</p>
+    </div>`).join('');
+
+  function bloqueProfundidad(dominio, nivel) {
+    const B = dominio === 'ganaderia'
+      ? (nivel === 'detalle' ? GANADERIA_DETALLE : GANADERIA_ALTONIVEL)
+      : (nivel === 'detalle' ? AGRICULTURA_DETALLE : AGRICULTURA_ALTONIVEL);
+    const cards = B.cards.map(([t,d]) => `<div class="pdf-card-box"><h4>${t}</h4><p>${sustituir(d,P)}</p></div>`).join('');
+    const kpis = B.kpis ? `
+      <div style="background:var(--petrol); border-radius:10px; padding:12px 14px; margin-top:4px;">
+        <div style="color:var(--mint); font-size:9.5px; letter-spacing:0.12em; font-weight:700; text-transform:uppercase;">Indicadores disponibles desde el primer mes</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+          ${B.kpis.map(k => `<span style="border:1px solid rgba(255,255,255,.25); border-radius:30px; padding:4px 10px; color:#DCE7E8; font-size:9.5px;">${sustituir(k,P)}</span>`).join('')}
+        </div>
+      </div>` : '';
+    return { kicker: B.kicker, titulo: B.titulo, intro: sustituir(B.intro,P), cards, kpis };
   }
+  const prof = SECUENCIA[perfil].map(([dom,niv]) => bloqueProfundidad(dom,niv));
 
-  const sysStr = sistema.charAt(0).toUpperCase() + sistema.slice(1);
   const dateStr = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
 
   return `
@@ -1672,9 +1850,9 @@ function buildPdfHtml() {
     <div>
       <div class="pdf-cover-logo">Ranch<span>GPT</span></div>
       <span class="pdf-cover-tag">Transformación Digital Agropecuaria</span>
-      <h1 class="pdf-cover-title">Transformación digital para impulsar la gestión de su campo</h1>
-      <p class="pdf-cover-subtitle">Propuesta de Gestión Integral y Control Operativo</p>
-      
+      <h1 class="pdf-cover-title">${ENC.tituloPortada}</h1>
+      <p class="pdf-cover-subtitle">${ENC.subtitulo}</p>
+
       <div class="pdf-cover-box">
         <label>Propuesta preparada especialmente para:</label>
         <h2>${prodNombre}</h2>
@@ -1685,6 +1863,9 @@ function buildPdfHtml() {
           ${sistema !== 'ganadero' ? `<div class="pdf-stat-item"><span>Agricultura:</span> <strong>${areaAgriVal}</strong></div>` : ''}
           <div class="pdf-stat-item"><span>Manejo:</span> <strong>${prodManejo}</strong></div>
           <div class="pdf-stat-item"><span>Ubicación:</span> <strong>${prodUbicacion}</strong></div>
+        </div>
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.12); font-size:10px; color:#9FB6BE;">
+          Sistema productivo: <strong style="color:var(--mint);">${ENC.sistemaLabel}</strong> · ${estab} establecimiento(s)
         </div>
       </div>
     </div>
@@ -1701,7 +1882,7 @@ function buildPdfHtml() {
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 2 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 2 de 13</div>
       </div>
 
       <span class="pdf-section-tag">01. Quiénes Somos</span>
@@ -1735,29 +1916,20 @@ function buildPdfHtml() {
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 3 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 3 de 13</div>
       </div>
 
       <span class="pdf-section-tag">02. El Desafío</span>
-      <h2 class="pdf-section-title">Cuando la empresa agropecuaria crece, la gestión requiere más control</h2>
-      <p class="pdf-intro-p" style="margin-bottom:12px;">
-        Con <strong>${areaTotal} ha</strong> y una operación de sistema <strong>${sysStr}</strong> en <strong>${prodUbicacion}</strong>, la toma de decisiones exige certezas. A medida que la escala aumenta, consolidar datos dispersos se vuelve un cuello de botella que compromete la rentabilidad.
+      <h2 class="pdf-section-title">Cuando la operación crece, la gestión exige otro nivel de control</h2>
+      <p class="pdf-intro-p" style="margin-bottom:10px;">
+        ${ENC.desafioIntro}
       </p>
 
-      <div class="pdf-grid-4">
-        ${desafios.map(d => `
-          <div class="pdf-card-box">
-            <h4><span>${d.icon}</span> ${d.title}</h4>
-            <p>${d.desc}</p>
-          </div>
-        `).join('')}
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-bottom:14px;">
+        <p style="color:var(--petrol-deep); font-size:11.5px; line-height:1.5;">${prodContexto}</p>
       </div>
 
-      <div class="pdf-card-box" style="background:var(--amber-soft); border-color:#F0D9A8; margin-top:10px;">
-        <p style="font-size:11px; font-weight:600; color:#8A6420;">
-          ⚠️ <strong>El costo real:</strong> No es solo tiempo perdido en planillas. Es certeza financiera comprometida, riesgos no mitigados y oportunidades de rentabilidad que se desaprovechan por falta de información a tiempo.
-        </p>
-      </div>
+      <div class="pdf-grid-4">${desafioCards}</div>
     </div>
     <div class="pdf-footer">
       <span>RanchGPT — Propuesta para ${prodNombre}</span>
@@ -1765,18 +1937,18 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 4: ¿QUÉ ES RANCHGPT? VISIÓN 360 -->
+  <!-- PÁGINA 4: ¿QUÉ ES RANCHGPT? — MÓDULOS SEGÚN SISTEMA PRODUCTIVO -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 4 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 4 de 13</div>
       </div>
 
-      <span class="pdf-section-tag">03. La Solución</span>
-      <h2 class="pdf-section-title">¿Qué es RanchGPT? — Solución Integral 360°</h2>
+      <span class="pdf-section-tag">03. Qué es RanchGPT</span>
+      <h2 class="pdf-section-title">Una vista integrada del sistema productivo</h2>
       <p class="pdf-intro-p">
-        RanchGPT reúne en un solo lugar la información productiva, económica, sanitaria y ambiental de su campo. Inteligencia artificial y procesos ordenados para transformar datos del campo en resultados de negocio.
+        RanchGPT consolida la información productiva, económica, sanitaria y ambiental de ${prodNombre} en una sola plataforma, con agentes de inteligencia artificial trabajando sobre todo el sistema productivo.
       </p>
 
       <div class="pdf-flow">
@@ -1787,45 +1959,80 @@ function buildPdfHtml() {
         <div class="pdf-flow-step">3. De la Decisión a los Resultados</div>
       </div>
 
-      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin-bottom:8px;">Módulos de Trabajo Integrados:</h3>
+      <h3 style="font-size:12.5px; font-weight:700; color:var(--petrol); margin:12px 0 8px;">Módulos priorizados para su sistema productivo:</h3>
 
-      <div class="pdf-grid-3">
-        <div class="pdf-card-box">
-          <h4>🐄 Ganadería</h4>
-          <p>Inventario, valorización, pesadas, sanidad, reproducción y recría con trazabilidad individual desde el nacimiento hasta la faena.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>🏭 Feedlot / Corral</h4>
-          <p>Gestión del corral de engorde: ingresos y egresos, seguimiento por corral, raciones, consumos y resultados de terminación.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>🌾 Agricultura</h4>
-          <p>Planificación de cultivos, potreros, labores agrícolas, rotaciones, insumos, cosecha y trazabilidad total.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>🌿 Pasturas</h4>
-          <p>Disponibilidad de forraje, carga animal por potrero, rotaciones y proyecciones de pastoreo para cría y recría.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>⛽ Combustible y Maquinaria</h4>
-          <p>Registro centralizado de consumo de combustible por máquina, labor y unidad productiva, con control de desvíos.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>💰 Finanzas y Stock</h4>
-          <p>Registro de compras, ventas, costos, ingresos, control de inventario y conciliación con su sistema contable.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>🟢 Sustentabilidad</h4>
-          <p>Huella de carbono equivalente, indicadores ambientales y atributos para acceder a mercados de mayor valor (ISO 14064).</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>📊 Reportes y BI</h4>
-          <p>Indicadores productivos, sanitarios y económicos al día para gerencia, administración y directorio, con fuerte foco visual.</p>
-        </div>
-        <div class="pdf-card-box">
-          <h4>🔗 Integraciones</h4>
-          <p>Convivencia con los sistemas existentes: su sistema propio de compra de ganado y su sistema contable, evitando doble digitación.</p>
-        </div>
+      <div class="pdf-grid-3">${modsHtml}</div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 5: PROFUNDIDAD 1 (según secuencia del perfil) -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 5 de 13</div>
+      </div>
+
+      <span class="pdf-section-tag">04. ${prof[0].kicker}</span>
+      <h2 class="pdf-section-title">${prof[0].titulo}</h2>
+      <p class="pdf-intro-p">${prof[0].intro}</p>
+      <div class="pdf-grid-2">${prof[0].cards}</div>
+      ${prof[0].kpis}
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 6: PROFUNDIDAD 2 (según secuencia del perfil) -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 6 de 13</div>
+      </div>
+
+      <span class="pdf-section-tag">05. ${prof[1].kicker}</span>
+      <h2 class="pdf-section-title">${prof[1].titulo}</h2>
+      <p class="pdf-intro-p">${prof[1].intro}</p>
+      <div class="pdf-grid-2">${prof[1].cards}</div>
+      ${prof[1].kpis}
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 7: INTELIGENCIA ARTIFICIAL Y CANALES -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 7 de 13</div>
+      </div>
+
+      <span class="pdf-section-tag">06. Inteligencia Artificial y Canales</span>
+      <h2 class="pdf-section-title">La plataforma se usa hablándole, desde donde esté el usuario</h2>
+      <p class="pdf-intro-p">
+        La barrera histórica de la digitalización del campo no es el software: es la curva de aprendizaje. RanchGPT la elimina con una capa conversacional que permite consultar información y registrar eventos en lenguaje natural, sin necesidad de aprender una interfaz.
+      </p>
+
+      <div class="pdf-grid-2">
+        <div class="pdf-card-box"><h4>Modo agentic — conversar con la plataforma</h4><p>El usuario le pregunta al sistema en lugar de construir reportes manualmente: consultas sobre stock, sanidad, pesadas, labores, costos o proyecciones, respondidas en texto, tablas o gráficos. El mismo canal permite generar registros, no solo consultarlos.</p></div>
+        <div class="pdf-card-box"><h4>WhatsApp multimodal — voz, imagen, video y texto</h4><p>El personal de campo registra eventos por el canal que ya usa todos los días: un audio describiendo una vacunación, una foto de una guía o etiqueta de producto, un video de una situación en el potrero, o un mensaje de texto. La plataforma interpreta y registra.</p></div>
+        <div class="pdf-card-box"><h4>App móvil offline-first</h4><p>Registro y consulta de información sin conectividad. La app guarda los eventos en el dispositivo y sincroniza automáticamente al recuperar señal, sin intervención del usuario y sin pérdida de datos.</p></div>
+        <div class="pdf-card-box"><h4>Web para gestión y dirección</h4><p>Mapas, tableros ejecutivos, reportes, configuración de protocolos y flujos de aprobación para administración, gerencia y directorio, con la misma información en línea que registra el campo.</p></div>
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-top:10px;">
+        <h4 style="color:var(--petrol)">Por qué esto define la adopción</h4>
+        <p style="color:var(--petrol-deep)">Cuando el registro depende de que cada persona aprenda una interfaz, la adopción se concentra en la administración y el dato de campo llega tarde y de segunda mano. Al permitir que el peón, el encargado, el capataz y el asesor operen por voz o por mensaje desde el lugar de trabajo, el dato se genera en origen y en el momento en que ocurre el evento, que es la única forma de sostener trazabilidad real.</p>
       </div>
     </div>
     <div class="pdf-footer">
@@ -1834,15 +2041,47 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 5: PROPUESTA DE VALOR - 3 PILARES -->
+  <!-- PÁGINA 8: CONTROL ECONÓMICO Y PERSONALIZACIÓN -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 5 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 8 de 13</div>
       </div>
 
-      <span class="pdf-section-tag">04. Metodología</span>
+      <span class="pdf-section-tag">07. Control Económico y Personalización</span>
+      <h2 class="pdf-section-title">Del registro productivo al indicador económico de gestión</h2>
+      <p class="pdf-intro-p">
+        La información productiva solo se vuelve gestión cuando se cruza con la economía del negocio. RanchGPT se integra con el sistema contable de ${prodNombre} para construir indicadores económicos sin doble digitación.
+      </p>
+
+      <div class="pdf-grid-2">
+        <div class="pdf-card-box"><h4>Integración con el sistema contable</h4><p>Convivencia con el sistema contable existente mediante integración: los movimientos de compras, ventas, costos e ingresos se concilian entre ambos sistemas, eliminando la doble carga y las diferencias entre lo productivo y lo contable.</p></div>
+        <div class="pdf-card-box"><h4>Imputación por unidad productiva</h4><p>Cada costo se imputa a la unidad, centro de costo, lote o categoría que corresponde, de modo que el resultado deje de ser un número global del establecimiento y pase a ser comparable entre unidades de negocio.</p></div>
+        <div class="pdf-card-box"><h4>Indicadores económicos de gestión</h4><p>Costo por hectárea, costo por kilo producido, margen por unidad de negocio, evolución de inventario valorizado y resultado por ejercicio, disponibles para gerencia y directorio con el mismo criterio mes a mes.</p></div>
+        <div class="pdf-card-box"><h4>Paquete de horas de personalización</h4><p>La propuesta incluye una bolsa de <strong>${horas}</strong> de equipo de producto para adaptar la plataforma al sistema productivo particular: reportes y tableros a medida, ajuste de nomenclaturas y categorías, protocolos propios e integraciones puntuales. Las horas adicionales de desarrollo y reporting que se requieran por fuera de esta bolsa se facturan a razón de <strong>USD 50 / hora</strong>.</p></div>
+      </div>
+
+      <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-top:10px;">
+        <h4 style="color:var(--petrol)">Cómo se gobierna el paquete de horas</h4>
+        <p style="color:var(--petrol-deep)">El líder agrónomo asignado a la cuenta prioriza trimestralmente el uso de las horas junto con la dirección de ${prodNombre}, con estimación previa y validación de cada desarrollo antes de su ejecución. Las horas no consumidas se informan en cada revisión trimestral, y el alcance puede ampliarse si el proyecto lo requiere.</p>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <span>RanchGPT — Propuesta para ${prodNombre}</span>
+      <span>www.ranchgpt.com</span>
+    </div>
+  </div>
+
+  <!-- PÁGINA 9: PROPUESTA DE VALOR - 3 PILARES -->
+  <div class="pdf-page">
+    <div>
+      <div class="pdf-header">
+        <div class="pdf-logo">Ranch<span>GPT</span></div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 9 de 13</div>
+      </div>
+
+      <span class="pdf-section-tag">08. Metodología</span>
       <h2 class="pdf-section-title">Nuestra Propuesta de Valor — Los 3 Pilares</h2>
       <p class="pdf-intro-p">
         <strong>No es solo tecnología. Es transformación operativa con adopción real.</strong><br>
@@ -1859,7 +2098,7 @@ function buildPdfHtml() {
         <div class="pdf-pillar-card" style="background:#174452;">
           <div class="pdf-pillar-num">02. Pilar de Procesos</div>
           <h4>Estandarización y Calidad de Datos (Operativo)</h4>
-          <p>Diseñamos protocolos sencillos para la carga de datos en origen (nacimientos, pesadas, movimientos, tratamientos), validaciones automáticas y flujos de aprobación para eliminar errores y asegurar trazabilidad total (SNIG / DICOSE).</p>
+          <p>Diseñamos protocolos sencillos para la carga de datos en origen (nacimientos, pesadas, movimientos, tratamientos), validaciones automáticas y flujos de aprobación para eliminar errores y asegurar trazabilidad total (${P.traza}).</p>
         </div>
 
         <div class="pdf-pillar-card" style="background:#1f5567;">
@@ -1875,15 +2114,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 5: PROYECTO DE IMPLEMENTACIÓN -->
+  <!-- PÁGINA 10: PROYECTO DE IMPLEMENTACIÓN -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 6 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 10 de 13</div>
       </div>
 
-      <span class="pdf-section-tag">05. Plan de Trabajo</span>
+      <span class="pdf-section-tag">09. Plan de Trabajo</span>
       <h2 class="pdf-section-title">Proyecto de Implementación "Llave en Mano"</h2>
       <p class="pdf-intro-p">
         Un proceso estructurado de <strong>12 semanas</strong> para transformar la gestión operativa de su campo con el acompañamiento de nuestro equipo.
@@ -1939,15 +2178,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 6: CALIDAD DE DATOS Y ASESORES -->
+  <!-- PÁGINA 11: CALIDAD DE DATOS Y ASESORES -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 7 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 11 de 13</div>
       </div>
 
-      <span class="pdf-section-tag">06. Asegurar la Calidad</span>
+      <span class="pdf-section-tag">10. Asegurar la Calidad</span>
       <h2 class="pdf-section-title">Calidad de Datos y Empoderamiento Técnico</h2>
       <p class="pdf-intro-p" style="margin-bottom:12px;">
         Funcionamos como su <strong>Oficina de Datos Externa</strong>. Revisamos la carga de información, auditamos consistencias y respaldamos el trabajo de sus asesores.
@@ -1976,7 +2215,7 @@ function buildPdfHtml() {
           </tr>
           <tr>
             <td><strong>Conciliación Mensual</strong></td>
-            <td>Verificamos stock real físico vs. sistema vs. registros oficiales (SNIG / DICOSE / Guías).</td>
+            <td>Verificamos stock real físico vs. sistema vs. registros oficiales (${P.traza}).</td>
           </tr>
         </tbody>
       </table>
@@ -2015,15 +2254,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 8: INVERSIÓN PERSONALIZADA -->
+  <!-- PÁGINA 12: INVERSIÓN PERSONALIZADA -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 8 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 12 de 13</div>
       </div>
 
-      <span class="pdf-section-tag">07. Propuesta Económica</span>
+      <span class="pdf-section-tag">11. Propuesta Económica</span>
       <h2 class="pdf-section-title">Inversión Personalizada</h2>
       <p class="pdf-intro-p" style="margin-bottom:10px;">
         Dimensionamiento para <strong>${areaTotal} ha</strong> (${sistema !== 'agricola' ? cabezas + ' cabezas' : 'área agrícola'}) en <strong>${estab} establecimiento(s)</strong>.
@@ -2058,19 +2297,20 @@ function buildPdfHtml() {
         <div class="pdf-card-box">✓ Plataforma SaaS RanchGPT (Web, Móvil y WhatsApp conversacional)</div>
         <div class="pdf-card-box">✓ Proyecto de implementación llave en mano de 12 semanas</div>
         <div class="pdf-card-box">✓ Líder técnico agrónomo dedicado a su cuenta</div>
-        <div class="pdf-card-box">✓ Auditoría semanal de datos y conciliación con DICOSE / SNIG</div>
+        <div class="pdf-card-box">✓ Auditoría semanal de datos y conciliación con ${P.traza}</div>
         <div class="pdf-card-box">✓ Tableros de Inteligencia de Negocios (BI) para la gerencia</div>
         <div class="pdf-card-box">✓ Módulo de combustible y centralización de costos operativos</div>
         <div class="pdf-card-box">✓ Conciliación con su sistema contable</div>
-        <div class="pdf-card-box">✓ Módulo de Huella de Carbono y trazabilidad exportable</div>
+        <div class="pdf-card-box">✓ Medición de Huella de Carbono incluida en la plataforma (verificación por LSQA a tarifa preferencial exclusiva para productores RanchGPT, no incluida)</div>
         <div class="pdf-card-box">✓ Capacitación presencial al personal y soporte continuo</div>
         <div class="pdf-card-box">✓ Actualizaciones continuas del sistema e inteligencia artificial</div>
+        <div class="pdf-card-box">✓ Paquete de personalización: ${horas} de equipo de producto (horas adicionales de desarrollo y reporting: USD 50/hora)</div>
       </div>
 
       <div class="pdf-card-box" style="background:var(--amber-soft); border-color:#F0D9A8; margin-top:10px;">
-        <h4 style="font-size:11px; color:#8A6420;">💡 Beneficios Fiscales — Proyecto de Inversión (COMAP)</h4>
+        <h4 style="font-size:11px; color:#8A6420;">💡 ${P.fiscal_titulo}</h4>
         <p style="font-size:10px; color:#8A6420;">
-          Esta inversión puede optimizarse financieramente a través del régimen de promoción de inversiones vigente en Uruguay: el licenciamiento de software computa como inversión en activo intangible, los servicios de implementación y capacitación son gastos computables de la puesta en marcha tecnológica, y el módulo de Huella de Carbono posiciona favorablemente ante el indicador de Tecnologías Limpias. Sugerimos evaluar con su asesor contable la incorporación de esta inversión a un proyecto COMAP (nuevo o como ampliación de uno vigente) para recuperar un porcentaje significativo mediante exoneraciones de IRAE.
+          ${P.fiscal_texto}
         </p>
       </div>
     </div>
@@ -2080,15 +2320,15 @@ function buildPdfHtml() {
     </div>
   </div>
 
-  <!-- PÁGINA 9: PRÓXIMOS PASOS Y CONTACTO -->
+  <!-- PÁGINA 13: PRÓXIMOS PASOS Y CONTACTO -->
   <div class="pdf-page">
     <div>
       <div class="pdf-header">
         <div class="pdf-logo">Ranch<span>GPT</span></div>
-        <div class="pdf-doc-type">Propuesta Comercial · Página 9 de 9</div>
+        <div class="pdf-doc-type">Propuesta Comercial · Página 13 de 13</div>
       </div>
 
-      <span class="pdf-section-tag">08. Siguientes Pasos</span>
+      <span class="pdf-section-tag">12. Siguientes Pasos</span>
       <h2 class="pdf-section-title">Próximos Pasos para Iniciar</h2>
       <p class="pdf-intro-p" style="margin-bottom:12px;">
         Acompañamos a su empresa agropecuaria a dar el salto de profesionalización en la gestión de su campo.
