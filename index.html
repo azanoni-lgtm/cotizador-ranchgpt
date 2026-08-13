@@ -1708,6 +1708,8 @@ const ENCUADRE = {
   }
 };
 
+const DESAFIO_LABEL = { ganadero: 'sistemas ganaderos', agricola: 'sistemas agrícolas', mixto: 'sistemas mixtos' };
+
 // ---- Tarjetas de "El Desafío", por perfil (mixto_ganadero y mixto_agricola comparten set) ----
 const DESAFIO = {
   ganadero: [
@@ -1948,8 +1950,14 @@ function buildPdfHtml() {
       </p>
 
       <div class="pdf-card-box" style="background:var(--mint-soft); border-color:#C2F0E2; margin-bottom:14px;">
+        <span style="font-size:9.5px; font-weight:700; color:var(--mint); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:4px;">Contexto relevado con ${prodNombre}</span>
         <p style="color:var(--petrol-deep); font-size:11.5px; line-height:1.5;">${prodContexto}</p>
       </div>
+
+      <h3 style="font-size:12px; font-weight:700; color:var(--petrol); margin-bottom:4px;">Desafíos más frecuentes en ${DESAFIO_LABEL[desafioKey]}</h3>
+      <p class="pdf-intro-p" style="margin-bottom:10px;">
+        No son necesariamente los de ${prodNombre} en particular, sino los que observamos con mayor frecuencia en este tipo de sistema productivo — y los que RanchGPT fue diseñada para resolver.
+      </p>
 
       <div class="pdf-grid-4">${desafioCards}</div>
     </div>
